@@ -100,8 +100,10 @@ public class Stage : MonoBehaviour {
         Color32 color = Color.white;
 
         tetracubeNode.rotation = Quaternion.identity;
-        tetracubeNode.position = new Vector3(0, boardHeight + 0.5f);
-        Debug.Log("switch");
+        tetracubeNode.position = new Vector3(0f, boardHeight + 0.5f, 0f);
+        if (index == 2) {
+            tetracubeNode.position += new Vector3(0.5f, 0.5f, 0.5f);
+        }
 
         switch (index) {
             // Cube(1) : 하늘색
@@ -111,7 +113,6 @@ public class Stage : MonoBehaviour {
                 CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color);
                 CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color);
                 CreateCube(tetracubeNode, new Vector3(0.0f, 1.0f, 0.0f), color);
-                Debug.Log("1");
                 break;
 
             // Cube(2) : 파란색
@@ -121,27 +122,24 @@ public class Stage : MonoBehaviour {
                 CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color);
                 CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color);
                 CreateCube(tetracubeNode, new Vector3(1.0f, 1.0f, 0.0f), color);
-                Debug.Log("1");
                 break;
 
             // Cube(3) : 귤색
             case 2:
                 color = new Color32(243, 168, 59, 255);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color);
-                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color);
-                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 1.0f), color);
-                Debug.Log("1");
+                CreateCube(tetracubeNode, new Vector3(-0.5f, 0.5f, -0.5f), color);
+                CreateCube(tetracubeNode, new Vector3(-0.5f, 0.5f, 0.5f), color);
+                CreateCube(tetracubeNode, new Vector3(0.5f, 0.5f, -0.5f), color);
+                CreateCube(tetracubeNode, new Vector3(0.5f, 0.5f, 0.5f), color);
                 break;
 
             // Cube(4) : 노란색
             case 3:
                 color = new Color32(255, 253, 84, 255);
+                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, -1.0f), color);
                 CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color);
+                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, -1.0f), color);
                 CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color);
-                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 2.0f), color);
-                Debug.Log("1");
                 break;
 
             // Cube 5 : 검은색
@@ -151,7 +149,6 @@ public class Stage : MonoBehaviour {
                 CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color);
                 CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color);
                 CreateCube(tetracubeNode, new Vector3(0f, 0f, -1f), color);
-                Debug.Log("1");
                 break;
 
             // Cube 6 : 하얀색
@@ -161,17 +158,15 @@ public class Stage : MonoBehaviour {
                 CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color);
                 CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color);
                 CreateCube(tetracubeNode, new Vector3(-1f, 0f, 1f), color);
-                Debug.Log("1");
                 break;
 
             // Cube 7 : 자주색
             case 6:
                 color = new Color32(155, 47, 246, 255);
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, -1f), color);
                 CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color);
                 CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 3f), color);
                 CreateCube(tetracubeNode, new Vector3(0f, 0f, 2f), color);
-                Debug.Log("1");
                 break;
 
             // Cube 8 : 빨간색
@@ -181,7 +176,6 @@ public class Stage : MonoBehaviour {
                 CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color);
                 CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color);
                 CreateCube(tetracubeNode, new Vector3(0f, 1f, 1f), color);
-                Debug.Log("1");
                 break;
         }
     }
