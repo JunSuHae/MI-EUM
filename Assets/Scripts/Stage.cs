@@ -9,9 +9,9 @@ public class Stage : MonoBehaviour {
 
     [Header("Game Settings")]
     [Range(4, 40)]
-    public int boardWidth = 10;
+    public int boardWidth = 5;
     [Range(5, 20)]
-    public int boardHeight = 20;
+    public int boardHeight = 10;
     public float fallCycle = 1.0f;
 
     public Cube CreateCube(Transform parent, Vector3 position, Color color, int order = 1) {
@@ -84,7 +84,25 @@ public class Stage : MonoBehaviour {
     }
 
     private bool MoveTetracube(Vector3 moveDir) {
+        Vector3 oldPos = tetracubeNode.transform.position;
+        Quaternion oldRot = tetracubeNode.transform.rotation;
+
         tetracubeNode.transform.position += moveDir;
+
+        if (!CanMoveTo(tetracubeNode))
+        {
+            tetracubeNode.transform.position = oldPos;
+            tetracubeNode.transform.rotation = oldRot;
+
+            if ((int)moveDir.y == -1 && (int)moveDir.x == 0)
+            {
+                AddToBoard(tetracubeNode);
+                CheckBoardColumn();
+                CreateTetracube();
+            }
+
+            return false;
+        }
         return true;
     }
 
@@ -93,89 +111,139 @@ public class Stage : MonoBehaviour {
         return true;
     }
 
+    bool CanMoveTo(Transform root)
+    {
+        for (int i = 0; i < root.childCount; ++i)
+        {
+            var node = root.GetChild(i);
+            int x = Mathf.RoundToInt(node.transform.position.x);
+            int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
+            int z = Mathf.RoundToInt(node.transform.position.z);
+
+            // if (x < 0 || x > boardWidth - 1)
+            //     return false;
+
+            if (y < 0)
+                return false;
+
+            var column = boardNode.Find(y.ToString());
+
+            if (column != null && column.Find(x.ToString() + ", " + z.ToString()) != null) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    void AddToBoard(Transform root)
+    {
+        while (root.childCount > 0)
+        {
+            var node = root.GetChild(0);
+
+            int x = Mathf.RoundToInt(node.transform.position.x);
+            int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
+            int z = Mathf.RoundToInt(node.transform.position.z);
+
+            node.parent = boardNode.Find(y.ToString());
+            node.name = x.ToString() + ", " + z.ToString();
+        }
+    }
+
+    void CheckBoardColumn()
+    {
+
+    }
 
     private void CreateTetracube() {
         int index = Random.Range(0, 8);
-        Debug.Log(index);
+        // Debug.Log(index);
         Color32 color = Color.white;
 
         tetracubeNode.rotation = Quaternion.identity;
         tetracubeNode.position = new Vector3(0f, boardHeight + 0.5f, 0f);
-        if (index == 2) {
-            tetracubeNode.position += new Vector3(0.5f, 0.5f, 0.5f);
-        }
+        // Debug.Log("switch");
 
         switch (index) {
-            // Cube(1) : ÇÏ´Ã»ö
+            // Cube(1) : ï¿½Ï´Ã»ï¿½
             case 0:
                 color = new Color32(115, 251, 253, 255);
                 CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color);
                 CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color);
                 CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color);
                 CreateCube(tetracubeNode, new Vector3(0.0f, 1.0f, 0.0f), color);
+                // Debug.Log("1");
                 break;
 
-            // Cube(2) : ÆÄ¶õ»ö
+            // Cube(2) : ï¿½Ä¶ï¿½ï¿½ï¿½
             case 1:
                 color = new Color32(0, 33, 245, 255);
                 CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color);
                 CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color);
                 CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color);
                 CreateCube(tetracubeNode, new Vector3(1.0f, 1.0f, 0.0f), color);
+                // Debug.Log("1");
                 break;
 
-            // Cube(3) : ±Ö»ö
+            // Cube(3) : ï¿½Ö»ï¿½
             case 2:
                 color = new Color32(243, 168, 59, 255);
-                CreateCube(tetracubeNode, new Vector3(-0.5f, 0.5f, -0.5f), color);
-                CreateCube(tetracubeNode, new Vector3(-0.5f, 0.5f, 0.5f), color);
-                CreateCube(tetracubeNode, new Vector3(0.5f, 0.5f, -0.5f), color);
-                CreateCube(tetracubeNode, new Vector3(0.5f, 0.5f, 0.5f), color);
+                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color);
+                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color);
+                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color);
+                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 1.0f), color);
+                // Debug.Log("1");
                 break;
 
-            // Cube(4) : ³ë¶õ»ö
+            // Cube(4) : ï¿½ï¿½ï¿½ï¿½ï¿½
             case 3:
                 color = new Color32(255, 253, 84, 255);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, -1.0f), color);
                 CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color);
-                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, -1.0f), color);
                 CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color);
+                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color);
+                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 2.0f), color);
+                // Debug.Log("1");
                 break;
 
-            // Cube 5 : °ËÀº»ö
+            // Cube 5 : ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             case 4:
                 color = new Color32(0, 0, 0, 255);
                 CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color);
                 CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color);
                 CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color);
                 CreateCube(tetracubeNode, new Vector3(0f, 0f, -1f), color);
+                // Debug.Log("1");
                 break;
 
-            // Cube 6 : ÇÏ¾á»ö
+            // Cube 6 : ï¿½Ï¾ï¿½ï¿½
             case 5:
                 color = new Color32(255, 255, 255, 255);
                 CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color);
                 CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color);
                 CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color);
                 CreateCube(tetracubeNode, new Vector3(-1f, 0f, 1f), color);
+                // Debug.Log("1");
                 break;
 
-            // Cube 7 : ÀÚÁÖ»ö
+            // Cube 7 : ï¿½ï¿½ï¿½Ö»ï¿½
             case 6:
                 color = new Color32(155, 47, 246, 255);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, -1f), color);
                 CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color);
                 CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color);
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, -1f), color);
                 CreateCube(tetracubeNode, new Vector3(0f, 0f, 2f), color);
+                // Debug.Log("1");
                 break;
 
-            // Cube 8 : »¡°£»ö
+            // Cube 8 : ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             case 7:
                 color = new Color32(235, 51, 35, 255);
                 CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color);
                 CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color);
                 CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color);
                 CreateCube(tetracubeNode, new Vector3(0f, 1f, 1f), color);
+                // Debug.Log("1");
                 break;
         }
     }
