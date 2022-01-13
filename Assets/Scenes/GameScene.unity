@@ -217,7 +217,7 @@ RectTransform:
   - {fileID: 259715464}
   - {fileID: 1577749884}
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -234,7 +234,6 @@ GameObject:
   m_Component:
   - component: {fileID: 136517395}
   - component: {fileID: 136517394}
-  - component: {fileID: 136517393}
   m_Layer: 0
   m_Name: Stage
   m_TagString: Untagged
@@ -242,25 +241,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &136517393
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 136517392}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 579d46f39da5d9549a4d7d546a1345a6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cubePrefab: {fileID: 2340294962021202897, guid: 2727982bf8a7f3446b80b1959408f979, type: 3}
-  backgroundNode: {fileID: 517576867}
-  boardNode: {fileID: 1282023540}
-  tetracubeNode: {fileID: 575514606}
-  boardWidth: 10
-  boardHeight: 20
-  fallCycle: 1
 --- !u!114 &136517394
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -295,7 +275,7 @@ Transform:
   - {fileID: 575514606}
   - {fileID: 1282023540}
   m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &165585583
 GameObject:
@@ -440,7 +420,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &259715463
 GameObject:
@@ -725,8 +705,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_Father: {fileID: 1229151612}
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
 --- !u!1 &963194225
 GameObject:
@@ -921,6 +901,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 963194228}
+  - {fileID: 705507995}
   m_Father: {fileID: 1252020574}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

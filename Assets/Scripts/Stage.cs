@@ -38,23 +38,35 @@ public class Stage : MonoBehaviour {
 
     private void Update() {
         Vector3 moveDir = Vector3.zero;
+        Quaternion rotDir = Quaternion.identity;
         bool isRotate = false;
-
+        // Move
         if (Input.GetKeyDown(KeyCode.LeftArrow)) {
             moveDir.x = -1;
-
-        } else if (Input.GetKeyDown(KeyCode.RightArrow)) {
+        }
+        if (Input.GetKeyDown(KeyCode.RightArrow)) {
             moveDir.x = 1;
         }
 
         if (Input.GetKeyDown(KeyCode.UpArrow)) {
             moveDir.z = 1;
-        } else if (Input.GetKeyDown(KeyCode.DownArrow)) {
+        }
+        if (Input.GetKeyDown(KeyCode.DownArrow)) {
             moveDir.z = -1;
         }
 
-        if (moveDir != Vector3.zero || isRotate) {
-            MoveTetracube(moveDir, isRotate);
+        // Rotate
+        if (Input.GetKeyDown(KeyCode.W)) {
+            rotDir *= Quaternion.Euler(0, 90, 0);
+            isRotate = true;
+        }
+        if (Input.GetKeyDown(KeyCode.A)) {
+            rotDir *= Quaternion.Euler(90, 0, 0);
+            isRotate = true;
+        }
+        if (Input.GetKeyDown(KeyCode.D)) {
+            rotDir *= Quaternion.Euler(0, 0, 90);
+            isRotate = true;
         }
 
         if (Time.time > nextFallTime) {
@@ -62,19 +74,25 @@ public class Stage : MonoBehaviour {
             moveDir = Vector3.down;
             isRotate = false;
         }
-
-        if (moveDir != Vector3.zero || isRotate) {
-            MoveTetracube(moveDir, isRotate);
+        
+        if (moveDir != Vector3.zero) {
+            MoveTetracube(moveDir);
+        }
+        if (isRotate) {
+            RotateTetracube(rotDir);
         }
     }
 
-    private bool MoveTetracube(Vector3 moveDir, bool isRotate) {
+    private bool MoveTetracube(Vector3 moveDir) {
         tetracubeNode.transform.position += moveDir;
-        if (isRotate) {
-            tetracubeNode.transform.rotation *= Quaternion.Euler(0, 0, 90);
-        }
         return true;
     }
+
+    private bool RotateTetracube(Quaternion rotDir) {
+        tetracubeNode.transform.rotation *= rotDir;
+        return true;
+    }
+
 
     private void CreateTetracube() {
         int index = Random.Range(0, 8);
