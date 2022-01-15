@@ -62,17 +62,6 @@ public class Stage : MonoBehaviour {
 
         // Rotate
         if (Input.GetKeyDown(KeyCode.W)) {
-<<<<<<< Updated upstream
-            rotDir *= Quaternion.Euler(0, 90, 0);
-            isRotate = true;
-        }
-        if (Input.GetKeyDown(KeyCode.A)) {
-            rotDir *= Quaternion.Euler(90, 0, 0);
-            isRotate = true;
-        }
-        if (Input.GetKeyDown(KeyCode.D)) {
-            rotDir *= Quaternion.Euler(0, 0, 90);
-=======
             rotDir = 1;
             isRotate = true;
         }
@@ -82,7 +71,6 @@ public class Stage : MonoBehaviour {
         }
         if (Input.GetKeyDown(KeyCode.D)) {
             rotDir = 3;
->>>>>>> Stashed changes
             isRotate = true;
         }
 
@@ -170,11 +158,6 @@ public class Stage : MonoBehaviour {
         }
     }
 
-<<<<<<< Updated upstream
-    private bool RotateTetracube(Quaternion rotDir) {
-        tetracubeNode.transform.rotation *= rotDir;
-        return true;
-=======
     // private bool RotateTetracube(Quaternion rotDir) {
     //     tetracubeNode.transform.rotation *= rotDir;
     //     return true;
@@ -196,7 +179,6 @@ public class Stage : MonoBehaviour {
                 break;
         }
         tetracubeNode.Rotate(new Vector3(0, rotAngle, 0), Space.World);
->>>>>>> Stashed changes
     }
 
     bool CanMoveTo(Transform root)
