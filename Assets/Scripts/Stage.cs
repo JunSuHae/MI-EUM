@@ -13,6 +13,10 @@ public class Stage : MonoBehaviour {
     [Range(5, 20)]
     public int boardHeight = 10;
     public float fallCycle = 1.0f;
+    private bool fall = false;
+    public bool getFall() {
+        return this.fall;
+    }
 
     public Cube CreateCube(Transform parent, Vector3 position, Color color, int order = 1) {
         var go = Instantiate(cubePrefab);
@@ -29,6 +33,7 @@ public class Stage : MonoBehaviour {
     private int halfWidth;
     private int halfHeight;
     private float nextFallTime;
+    
 
     private void Start() {
         halfWidth = Mathf.RoundToInt(boardWidth * 0.5f);
@@ -40,7 +45,6 @@ public class Stage : MonoBehaviour {
         Vector3 moveDir = Vector3.zero;
         Quaternion rotDir = Quaternion.identity;
         bool isRotate = false;
-
         // Move
         if (Input.GetKeyDown(KeyCode.LeftArrow)) {
             moveDir.x = -1;
@@ -58,15 +62,15 @@ public class Stage : MonoBehaviour {
 
         // Rotate
         if (Input.GetKeyDown(KeyCode.W)) {
-            tetracubeNode.Rotate(new Vector3(0, 90, 0), Space.World);
+            rotDir *= Quaternion.Euler(0, 90, 0);
             isRotate = true;
         }
         if (Input.GetKeyDown(KeyCode.A)) {
-            tetracubeNode.Rotate(new Vector3(90, 0, 0), Space.World);
+            rotDir *= Quaternion.Euler(90, 0, 0);
             isRotate = true;
         }
         if (Input.GetKeyDown(KeyCode.D)) {
-            tetracubeNode.Rotate(new Vector3(0, 0, 90), Space.World);
+            rotDir *= Quaternion.Euler(0, 0, 90);
             isRotate = true;
         }
 
@@ -74,13 +78,16 @@ public class Stage : MonoBehaviour {
             nextFallTime = Time.time + fallCycle;
             moveDir = Vector3.down;
             isRotate = false;
+            fall = true;
+        } else {
+            fall = false;
         }
         
         if (moveDir != Vector3.zero) {
             MoveTetracube(moveDir);
         }
         if (isRotate) {
-            tetracubeNode.transform.rotation *= rotDir;
+            RotateTetracube(rotDir);
         }
     }
 
@@ -95,7 +102,7 @@ public class Stage : MonoBehaviour {
             tetracubeNode.transform.position = oldPos;
             tetracubeNode.transform.rotation = oldRot;
 
-            if ((int)moveDir.y == -1 && (int)moveDir.x == 0)
+            if ((int)moveDir.y == -1 && (int)moveDir.x == 0 && (int)moveDir.z == 0)
             {
                 AddToBoard(tetracubeNode);
                 CheckBoardColumn();
@@ -107,23 +114,9 @@ public class Stage : MonoBehaviour {
         return true;
     }
 
-    // private bool RotateTetracube(Quaternion rotDir) {
-    //     tetracubeNode.transform.rotation *= rotDir;
-    //     return true;
-    // }
-    
-    public void RotateTetracube(int rotDir) {
-        switch (rotDir) {
-            case 1:
-                tetracubeNode.Rotate(new Vector3(0, 90, 0), Space.World);
-                break;
-            case 2:
-                tetracubeNode.Rotate(new Vector3(90, 0, 0), Space.World);
-                break;
-            case 3:
-                tetracubeNode.Rotate(new Vector3(0, 0, 90), Space.World);
-                break;
-        }
+    private bool RotateTetracube(Quaternion rotDir) {
+        tetracubeNode.transform.rotation *= rotDir;
+        return true;
     }
 
     bool CanMoveTo(Transform root)
@@ -160,9 +153,13 @@ public class Stage : MonoBehaviour {
             int x = Mathf.RoundToInt(node.transform.position.x);
             int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
             int z = Mathf.RoundToInt(node.transform.position.z);
-
-            node.parent = boardNode.Find(y.ToString());
-            node.name = x.ToString() + ", " + z.ToString();
+            if ((Mathf.Abs(x) == 2 || Mathf.Abs(z) == 2) &&
+                (Mathf.Abs(x) <= 2 && Mathf.Abs(z) <= 2)) {
+                node.parent = boardNode.Find(y.ToString());
+                node.name = x.ToString() + ", " + z.ToString();
+            } else {
+                node.parent = boardNode.Find("trash");
+            }
         }
     }
 
