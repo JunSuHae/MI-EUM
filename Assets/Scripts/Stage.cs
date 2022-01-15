@@ -13,6 +13,10 @@ public class Stage : MonoBehaviour {
     [Range(5, 20)]
     public int boardHeight = 10;
     public float fallCycle = 1.0f;
+    private bool fall = false;
+    public bool getFall() {
+        return this.fall;
+    }
 
     public Cube CreateCube(Transform parent, Vector3 position, Color color, int order = 1) {
         var go = Instantiate(cubePrefab);
@@ -29,6 +33,7 @@ public class Stage : MonoBehaviour {
     private int halfWidth;
     private int halfHeight;
     private float nextFallTime;
+    
 
     private void Start() {
         halfWidth = Mathf.RoundToInt(boardWidth * 0.5f);
@@ -73,6 +78,9 @@ public class Stage : MonoBehaviour {
             nextFallTime = Time.time + fallCycle;
             moveDir = Vector3.down;
             isRotate = false;
+            fall = true;
+        } else {
+            fall = false;
         }
         
         if (moveDir != Vector3.zero) {
@@ -94,7 +102,7 @@ public class Stage : MonoBehaviour {
             tetracubeNode.transform.position = oldPos;
             tetracubeNode.transform.rotation = oldRot;
 
-            if ((int)moveDir.y == -1 && (int)moveDir.x == 0)
+            if ((int)moveDir.y == -1 && (int)moveDir.x == 0 && (int)moveDir.z == 0)
             {
                 AddToBoard(tetracubeNode);
                 CheckBoardColumn();
@@ -145,9 +153,13 @@ public class Stage : MonoBehaviour {
             int x = Mathf.RoundToInt(node.transform.position.x);
             int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
             int z = Mathf.RoundToInt(node.transform.position.z);
-
-            node.parent = boardNode.Find(y.ToString());
-            node.name = x.ToString() + ", " + z.ToString();
+            if ((Mathf.Abs(x) == 2 || Mathf.Abs(z) == 2) &&
+                (Mathf.Abs(x) <= 2 && Mathf.Abs(z) <= 2)) {
+                node.parent = boardNode.Find(y.ToString());
+                node.name = x.ToString() + ", " + z.ToString();
+            } else {
+                node.parent = boardNode.Find("trash");
+            }
         }
     }
 
