@@ -12,7 +12,11 @@ public class Stage : MonoBehaviour {
     public int boardWidth = 5;
     [Range(5, 20)]
     public int boardHeight = 10;
+<<<<<<< Updated upstream
     public float fallCycle = 1.0f;
+=======
+    public float fallCycle = 0.5f;
+>>>>>>> Stashed changes
     private bool fall = false;
     public bool getFall() {
         return this.fall;

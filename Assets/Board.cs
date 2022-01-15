@@ -1,17 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Board : MonoBehaviour
 {
     private bool fall;
     private int trashingHeight = -5;
     private Stage stage;
+    private Score score;
     private GameObject trash;
     // Start is called before the first frame update
     void Start()
     {
         stage = this.transform.parent.GetComponent<Stage>();
+        score = GameObject.Find("ScoreSystem").GetComponent<Score>();
+        //SceneManager.GetSceneByName("GameScene").get;
+        //canvas = this.transform.parent.GetComponent<Canvas>();
         int bh = stage.boardHeight;
         for (int i = 0; i < bh; i++) {
             var col = new GameObject((bh - i - 1).ToString());
@@ -43,6 +48,8 @@ public class Board : MonoBehaviour
             GameObject child = trash.transform.GetChild(i).gameObject;
             if (child.transform.position.y < trashingHeight) {
                 Destroy(child);
+                //canvas.GetComponentInChildren<Score>().substractScore();
+                score.substractScore();
             }
         }
     }
