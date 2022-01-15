@@ -12,7 +12,7 @@ public class Stage : MonoBehaviour {
     public int boardWidth = 5;
     [Range(5, 20)]
     public int boardHeight = 10;
-    public float fallCycle = 1.0f;
+    public float fallCycle = 2.0f;
     private bool fall = false;
     public bool getFall() {
         return this.fall;
@@ -62,15 +62,15 @@ public class Stage : MonoBehaviour {
 
         // Rotate
         if (Input.GetKeyDown(KeyCode.W)) {
-            rotDir *= Quaternion.Euler(0, 90, 0);
+            tetracubeNode.Rotate(new Vector3(0, 90, 0), Space.World);
             isRotate = true;
         }
         if (Input.GetKeyDown(KeyCode.A)) {
-            rotDir *= Quaternion.Euler(90, 0, 0);
+            tetracubeNode.Rotate(new Vector3(90, 0, 0), Space.World);
             isRotate = true;
         }
         if (Input.GetKeyDown(KeyCode.D)) {
-            rotDir *= Quaternion.Euler(0, 0, 90);
+            tetracubeNode.Rotate(new Vector3(0, 0, 90), Space.World);
             isRotate = true;
         }
 
@@ -87,7 +87,7 @@ public class Stage : MonoBehaviour {
             MoveTetracube(moveDir);
         }
         if (isRotate) {
-            RotateTetracube(rotDir);
+            tetracubeNode.transform.rotation *= rotDir;
         }
     }
 
@@ -114,9 +114,23 @@ public class Stage : MonoBehaviour {
         return true;
     }
 
-    private bool RotateTetracube(Quaternion rotDir) {
-        tetracubeNode.transform.rotation *= rotDir;
-        return true;
+    // private bool RotateTetracube(Quaternion rotDir) {
+    //     tetracubeNode.transform.rotation *= rotDir;
+    //     return true;
+    // }
+    
+    public void RotateTetracube(int rotDir) {
+        switch (rotDir) {
+            case 1:
+                tetracubeNode.Rotate(new Vector3(0, 90, 0), Space.World);
+                break;
+            case 2:
+                tetracubeNode.Rotate(new Vector3(90, 0, 0), Space.World);
+                break;
+            case 3:
+                tetracubeNode.Rotate(new Vector3(0, 0, 90), Space.World);
+                break;
+        }
     }
 
     bool CanMoveTo(Transform root)
