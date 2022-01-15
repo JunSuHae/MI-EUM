@@ -12,7 +12,7 @@ public class Stage : MonoBehaviour {
     public int boardWidth = 5;
     [Range(5, 20)]
     public int boardHeight = 10;
-    public float fallCycle = 1.0f;
+    public float fallCycle = 2.0f;
     private bool fall = false;
     public bool getFall() {
         return this.fall;
@@ -225,12 +225,56 @@ public class Stage : MonoBehaviour {
         }
     }
 
-    void CheckBoardColumn()
-    {
+    void CheckBoardColumn() {
+        bool isCleared = false;
+        int fullBlockNum = 4 * boardWidth;
+        foreach (Transform column in boardNode) {
+            if (column.name == "trash") {
+                continue;
+            }
+            if (column.transform.childCount == fullBlockNum) {
+                Debug.Log("Destroy");
+                foreach (Transform tile in column) {
+                    Destroy(tile.gameObject);
+                }
 
+                column.DetachChildren();
+                isCleared = true;
+            }
+        }
+        if (isCleared) {
+            for (int i = 0; i < boardHeight; ++i) {
+                var column = boardNode.Find(i.ToString());
+
+                // 이미 비어 있는 행은 무시
+                if (column.transform.childCount == 0) {
+                    continue;
+                }
+
+                int emptyCol = 0;
+                int j = i - 1;
+                while (j >= 0) {
+                    if (boardNode.Find(j.ToString()).childCount == 0) {
+                        emptyCol++;
+                    }
+                    j--;
+                }
+
+                if (emptyCol > 0) {
+                    var targetColumn = boardNode.Find((i - emptyCol).ToString());
+
+                    while (column.childCount > 0) {
+                        Transform tile = column.GetChild(0);
+                        tile.parent = targetColumn;
+                        tile.transform.position += new Vector3(0, -emptyCol, 0);
+                    }
+                    column.DetachChildren();
+                }
+            }
+        }
     }
 
-    private void CreateTetracube() {
+private void CreateTetracube() {
         int index = Random.Range(0, 8);
         // Debug.Log(index);
         Color32 color = Color.white;
