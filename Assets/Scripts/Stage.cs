@@ -42,58 +42,105 @@ public class Stage : MonoBehaviour {
     }
 
     private void Update() {
-        Vector3 moveDir = Vector3.zero;
-        Quaternion rotDir = Quaternion.identity;
+        int moveDir = 0;
+        int rotDir = 0;
         bool isRotate = false;
         // Move
         if (Input.GetKeyDown(KeyCode.LeftArrow)) {
-            moveDir.x = -1;
+            moveDir = 1;
         }
         if (Input.GetKeyDown(KeyCode.RightArrow)) {
-            moveDir.x = 1;
+            moveDir = 2;
         }
 
         if (Input.GetKeyDown(KeyCode.UpArrow)) {
-            moveDir.z = 1;
+            moveDir = 3;
         }
         if (Input.GetKeyDown(KeyCode.DownArrow)) {
-            moveDir.z = -1;
+            moveDir = 4;
         }
 
         // Rotate
         if (Input.GetKeyDown(KeyCode.W)) {
-            tetracubeNode.Rotate(new Vector3(0, 90, 0), Space.World);
+            rotDir = 1;
             isRotate = true;
         }
         if (Input.GetKeyDown(KeyCode.A)) {
-            tetracubeNode.Rotate(new Vector3(90, 0, 0), Space.World);
+            rotDir = 2;
             isRotate = true;
         }
         if (Input.GetKeyDown(KeyCode.D)) {
-            tetracubeNode.Rotate(new Vector3(0, 0, 90), Space.World);
+            rotDir = 3;
             isRotate = true;
         }
 
         if (Time.time > nextFallTime) {
             nextFallTime = Time.time + fallCycle;
-            moveDir = Vector3.down;
+            moveDir = -1;
             isRotate = false;
             fall = true;
         } else {
             fall = false;
         }
         
-        if (moveDir != Vector3.zero) {
+        if (moveDir != 0) {
             MoveTetracube(moveDir);
         }
         if (isRotate) {
-            tetracubeNode.transform.rotation *= rotDir;
+            RotateTetracube(rotDir);
         }
     }
 
-    private bool MoveTetracube(Vector3 moveDir) {
+    // private bool MoveTetracube(Vector3 moveDir) {
+    //     Vector3 oldPos = tetracubeNode.transform.position;
+    //     Quaternion oldRot = tetracubeNode.transform.rotation;
+
+    //     float rotAngle = GameObject.Find("CameraBase").transform.eulerAngles.y;
+    //     moveDir = Quaternion.Euler(0, rotAngle, 0) * moveDir;
+
+    //     tetracubeNode.transform.position += moveDir;
+
+    //     if (!CanMoveTo(tetracubeNode))
+    //     {
+    //         tetracubeNode.transform.position = oldPos;
+    //         tetracubeNode.transform.rotation = oldRot;
+
+    //         if ((int)moveDir.y == -1 && (int)moveDir.x == 0 && (int)moveDir.z == 0)
+    //         {
+    //             AddToBoard(tetracubeNode);
+    //             CheckBoardColumn();
+    //             CreateTetracube();
+    //         }
+
+    //         return false;
+    //     }
+    //     return true;
+    // }
+
+    public void MoveTetracube(int i) {
         Vector3 oldPos = tetracubeNode.transform.position;
         Quaternion oldRot = tetracubeNode.transform.rotation;
+        Vector3 moveDir = new Vector3(0, 0, 0);
+        switch (i) {
+            case -1:
+                moveDir = new Vector3(0, -1, 0);
+                break;
+            case 1:
+                moveDir = new Vector3(-1, 0, 0);
+                break;
+            case 2:
+                moveDir = new Vector3(1, 0, 0);
+                break;
+            case 3:
+                moveDir = new Vector3(0, 0, 1);
+                break;
+            case 4:
+                moveDir = new Vector3(0, 0, -1);
+                break;
+        }
+
+        float rotAngle = GameObject.Find("CameraBase").transform.eulerAngles.y;
+        moveDir = Quaternion.Euler(0, rotAngle, 0) * moveDir;
 
         tetracubeNode.transform.position += moveDir;
 
@@ -108,10 +155,7 @@ public class Stage : MonoBehaviour {
                 CheckBoardColumn();
                 CreateTetracube();
             }
-
-            return false;
         }
-        return true;
     }
 
     // private bool RotateTetracube(Quaternion rotDir) {
@@ -120,6 +164,9 @@ public class Stage : MonoBehaviour {
     // }
     
     public void RotateTetracube(int rotDir) {
+        float rotAngle = GameObject.Find("CameraBase").transform.eulerAngles.y;
+        Debug.Log(rotAngle);
+        tetracubeNode.Rotate(new Vector3(0, -rotAngle, 0), Space.World);
         switch (rotDir) {
             case 1:
                 tetracubeNode.Rotate(new Vector3(0, 90, 0), Space.World);
@@ -131,6 +178,7 @@ public class Stage : MonoBehaviour {
                 tetracubeNode.Rotate(new Vector3(0, 0, 90), Space.World);
                 break;
         }
+        tetracubeNode.Rotate(new Vector3(0, rotAngle, 0), Space.World);
     }
 
     bool CanMoveTo(Transform root)
