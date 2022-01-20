@@ -208,6 +208,7 @@ public class Stage : MonoBehaviour {
 
     void AddToBoard(Transform root)
     {
+        Score score = GameObject.Find("Score").GetComponent<Score>();
         while (root.childCount > 0)
         {
             var node = root.GetChild(0);
@@ -221,6 +222,7 @@ public class Stage : MonoBehaviour {
                 node.name = x.ToString() + ", " + z.ToString();
             } else {
                 node.parent = boardNode.Find("trash");
+                score.substractScore();
             }
         }
     }
