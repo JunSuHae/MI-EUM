@@ -65,17 +65,17 @@ public class Stage : MonoBehaviour {
         bool isRotate = false;
         // Move
         if (Input.GetKeyDown(KeyCode.LeftArrow)) {
-            moveDir = 1;
+            moveDir = 3;
         }
         if (Input.GetKeyDown(KeyCode.RightArrow)) {
-            moveDir = 2;
+            moveDir = 4;
         }
 
         if (Input.GetKeyDown(KeyCode.UpArrow)) {
-            moveDir = 3;
+            moveDir = 2;
         }
         if (Input.GetKeyDown(KeyCode.DownArrow)) {
-            moveDir = 4;
+            moveDir = 1;
         }
 
         // Rotate
@@ -144,16 +144,16 @@ public class Stage : MonoBehaviour {
                 for(int j = y-1; j >= 0; j--){
                     var column = boardNode.Find(j.ToString());
                     if(column.Find(x.ToString() + ", " + z.ToString()) != null){
-                        CreateProjection(new Vector3(x, j + 1.1f, z), lemon);
+                        CreateProjection(new Vector3(x, j + 1.05f, z), lemon);
                         b = false;
                         break;
                     }
                 }
                 if (b) {
-                    CreateProjection(new Vector3(x, 0.1f, z), lemon);
+                    CreateProjection(new Vector3(x, 0.05f, z), lemon);
                 }
             } else {
-                CreateProjection(new Vector3(x, 0.1f, z), lemon);
+                CreateProjection(new Vector3(x, 0.05f, z), Color.red);
             }
  
 
