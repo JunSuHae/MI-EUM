@@ -9,6 +9,7 @@ public class Stage : MonoBehaviour {
     public Transform backgroundNode;
     public Transform boardNode;
     public Transform tetracubeNode;
+    public GameObject gameoverPanel;
 
     [Header("Game Settings")]
     [Range(4, 40)]
@@ -57,62 +58,73 @@ public class Stage : MonoBehaviour {
         score = GameObject.Find("Score").GetComponent<Score>();
         projections = GameObject.Find("Projections");
         CreateTetracube();
+        gameoverPanel.SetActive(false);
     }
 
     private void Update() {
-        int moveDir = 0;
-        int rotDir = 0;
-        bool isRotate = false;
-        // Move
-        if (Input.GetKeyDown(KeyCode.LeftArrow)) {
-            moveDir = 3;
+        GameObject lastColumn = GameObject.Find((boardHeight - 1).ToString());
+        if (lastColumn.transform.childCount != 0) {
+            gameoverPanel.SetActive(true);
         }
-        if (Input.GetKeyDown(KeyCode.RightArrow)) {
-            moveDir = 4;
-        }
-
-        if (Input.GetKeyDown(KeyCode.UpArrow)) {
-            moveDir = 2;
-        }
-        if (Input.GetKeyDown(KeyCode.DownArrow)) {
-            moveDir = 1;
-        }
-
-        // Rotate
-        if (Input.GetKeyDown(KeyCode.W)) {
-            rotDir = 1;
-            isRotate = true;
-        }
-        if (Input.GetKeyDown(KeyCode.A)) {
-            rotDir = 2;
-            isRotate = true;
-        }
-        if (Input.GetKeyDown(KeyCode.D)) {
-            rotDir = 3;
-            isRotate = true;
-        }
-
-        if (Time.time > nextFallTime) {
-            nextFallTime = Time.time + fallCycle;
-            moveDir = -1;
-            isRotate = false;
-            fall = true;
+        if (gameoverPanel.activeSelf) {
+            if (Input.GetKeyDown(KeyCode.Escape)) {
+                UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+            }
         } else {
-            fall = false;
-        }
-        
-        if (moveDir != 0) {
-            MoveTetracube(moveDir);
-        }
-        if (isRotate) {
-            RotateTetracube(rotDir);
-        }
+            int moveDir = 0;
+            int rotDir = 0;
+            bool isRotate = false;
+            // Move
+            if (Input.GetKeyDown(KeyCode.LeftArrow)) {
+                moveDir = 3;
+            }
+            if (Input.GetKeyDown(KeyCode.RightArrow)) {
+                moveDir = 4;
+            }
 
-        foreach (Transform child in projections.transform) {
-            GameObject.Destroy(child.gameObject);
-        }
+            if (Input.GetKeyDown(KeyCode.UpArrow)) {
+                moveDir = 2;
+            }
+            if (Input.GetKeyDown(KeyCode.DownArrow)) {
+                moveDir = 1;
+            }
 
-        ShowCubeProjection();
+            // Rotate
+            if (Input.GetKeyDown(KeyCode.W)) {
+                rotDir = 1;
+                isRotate = true;
+            }
+            if (Input.GetKeyDown(KeyCode.A)) {
+                rotDir = 2;
+                isRotate = true;
+            }
+            if (Input.GetKeyDown(KeyCode.D)) {
+                rotDir = 3;
+                isRotate = true;
+            }
+
+            if (Time.time > nextFallTime) {
+                nextFallTime = Time.time + fallCycle;
+                moveDir = -1;
+                isRotate = false;
+                fall = true;
+            } else {
+                fall = false;
+            }
+            
+            if (moveDir != 0) {
+                MoveTetracube(moveDir);
+            }
+            if (isRotate) {
+                RotateTetracube(rotDir);
+            }
+
+            foreach (Transform child in projections.transform) {
+                GameObject.Destroy(child.gameObject);
+            }
+
+            ShowCubeProjection();
+        }
     }
 
     //solution 2. calculate x, z by column and get min(y of tetracube, max(board)) 
