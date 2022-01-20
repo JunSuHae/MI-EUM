@@ -3,6 +3,7 @@ using UnityEngine;
 public class Stage : MonoBehaviour {
     [Header("Editor Objects")]
     public GameObject cubePrefab;
+    //public GameObject simulationPrefab;
     public Transform backgroundNode;
     public Transform boardNode;
     public Transform tetracubeNode;
@@ -24,6 +25,18 @@ public class Stage : MonoBehaviour {
         cube.sortingOrder = order;
 
         return cube;
+    }
+
+    public Simulation CreateSimulation(Transform parent, Vector3 position, Color color, int order = 1) {
+        var go = Instantiate(simulationPrefab);
+        go.transform.parent = parent;
+        go.transform.localPosition = position;
+
+        var simulation = go.GetComponent<Simulation>();
+        simulation.color = color;
+        simulation.sortingOrder = order;
+
+        return simulation;
     }
 
     private int halfWidth;
@@ -80,6 +93,78 @@ public class Stage : MonoBehaviour {
         }
         if (isRotate) {
             RotateTetracube(rotDir);
+        }
+
+        ShowCubeProjection();
+
+        /*
+        //check the positions of the projection of tetracube
+        RaycastHit yhit;
+        int MaxDistance = boardHeight; //length of Ray
+
+        Debug.DrawRay(transform.position, transform.forward*MaxDistance, Color.blue, 0.3f);
+        if(Physics.Raycast(transform.position, transform.forward, out yhit, MaxDistance)){
+            yhit.transform.GetComponent<Renderer>().material.color = Color.red;
+        }
+        */
+    }
+
+    /*private void ShowCubeProjection(){
+        //check the positions of the projection of tetracube
+        RaycastHit yhit;
+        int MaxDistance = boardHeight; //length of Ray
+
+        int layerMask = 1 << LayerMask.NameToLayer("Board");
+        for (int i = 0; i < tetracubeNode.childCount; ++i)
+        {
+            var node = tetracubeNode.GetChild(i);
+            Debug.DrawRay(node.transform.position, Vector3.down*MaxDistance, Color.blue, 0.3f);
+            if(Physics.Raycast(node.transform.position, Vector3.down, out yhit, MaxDistance, layerMask)){
+                CreateCube(node, yhit.point, Color.red);
+                //yhit.transform.GetComponent<Renderer>().material.color = Color.red;
+            }
+        }
+        //raycast가 벗어나면 그 column에 있는 모든 simulation을 없애자
+    }  */
+    //solution 2. calculate x, z by column and get min(y of tetracube, max(board)) 
+    //ㅁ 바깥에 위치한 건 바닥으로 projection
+    //미리 simulation을 깔아두고 투명도 조절: 이건 큐브 이동에 따라 효율성이 떨어질지도
+    
+    private void ShowCubeProjection(){
+        //set
+        while (tetracubeNode.childCount > 0)
+        {
+            var node = tetracubeNode.GetChild(0);
+
+            int x = Mathf.RoundToInt(node.transform.position.x);
+            int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
+            int z = Mathf.RoundToInt(node.transform.position.z);
+
+            if(y < 0 || (set 중복))
+                continue;
+            
+            var column = boardNode.Find(y.ToString());
+            
+            d
+
+            /*
+            1 아무것도 없을 때: (그냥 board 바닥 +) y=0 구역
+            2 블럭이 있을 때: 해당 x, z의 블럭에 있는 y값을 전부 찾은 뒤
+            내려오는 블럭보다 작은 값들 중 최댓값
+            */
+
+            /*if (y < 0)
+                return false;
+
+            var column = boardNode.Find(y.ToString());
+
+            if (column != null && column.Find(x.ToString() + ", " + z.ToString()) != null) {
+                return false;
+            }*/
+
+            //node.parent = boardNode.Find(y.ToString());
+            //node.name = x.ToString() + ", " + z.ToString();
+            CreateSimulation(node, , Color.red);
         }
     }
 
