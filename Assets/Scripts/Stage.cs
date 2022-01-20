@@ -127,6 +127,10 @@ public class Stage : MonoBehaviour {
         }
     }
 
+    public void LoadScene() {
+        UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+    }
+
     //solution 2. calculate x, z by column and get min(y of tetracube, max(board)) 
     //ㅁ 바깥에 위치한 건 바닥으로 projection
     //미리 simulation을 깔아두고 투명도 조절: 이건 큐브 이동에 따라 효율성이 떨어질지도
