@@ -5,6 +5,7 @@ public class Stage : MonoBehaviour {
     [Header("Editor Objects")]
     public GameObject cubePrefab;
     public GameObject projectionPrefab;
+    public GameObject projections;
     public Transform backgroundNode;
     public Transform boardNode;
     public Transform tetracubeNode;
@@ -33,10 +34,10 @@ public class Stage : MonoBehaviour {
         return cube;
     }
 
-    public Projection CreateProjection(Transform parent, Vector3 position, Color color, int order = 1) {
+    public Projection CreateProjection(Vector3 position, Color color, int order = 1) {
         var go = Instantiate(projectionPrefab);
-        go.transform.parent = parent;
         go.transform.localPosition = position;
+        go.transform.parent = projections.transform;
 
         var projection = go.GetComponent<Projection>();
         projection.color = color;
@@ -54,6 +55,7 @@ public class Stage : MonoBehaviour {
         halfWidth = Mathf.RoundToInt(boardWidth * 0.5f);
         halfHeight = Mathf.RoundToInt(boardHeight * 0.5f);
         score = GameObject.Find("Score").GetComponent<Score>();
+        projections = GameObject.Find("Projections");
         CreateTetracube();
     }
 
@@ -106,6 +108,10 @@ public class Stage : MonoBehaviour {
             RotateTetracube(rotDir);
         }
 
+        foreach (Transform child in projections.transform) {
+            GameObject.Destroy(child.gameObject);
+        }
+
         ShowCubeProjection();
     }
 
@@ -116,25 +122,24 @@ public class Stage : MonoBehaviour {
     private void ShowCubeProjection(){
         HashSet<string> xz_position = new HashSet<string>();
 
-        while (tetracubeNode.childCount > 0)
+        for (int i = 0; i < tetracubeNode.childCount; ++i)
         {
-            var node = tetracubeNode.GetChild(0);
+            var node = tetracubeNode.GetChild(i);
 
             int x = Mathf.RoundToInt(node.transform.position.x);
             int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
             int z = Mathf.RoundToInt(node.transform.position.z);
 
-            if(y < 0 || (xz_position.Contains(x.ToString() + ", " + z.ToString())))
+            if (y < 0 || (xz_position.Contains(x.ToString() + ", " + z.ToString())))
                 continue;
             
             xz_position.Add(x.ToString() + ", " + z.ToString());
             
             var column = boardNode.Find(y.ToString());
             
-            if(column == null)
-                CreateProjection(node, new Vector3(x, 0.0f, z), Color.red);
+            if(column.childCount == 0)
+                CreateProjection(new Vector3(x, 0.0f, z), Color.red);
 
-            
             /*
             1 아무것도 없을 때: (그냥 board 바닥 +) y=0 구역
             2 블럭이 있을 때: 해당 x, z의 블럭에 있는 y값을 전부 찾은 뒤
