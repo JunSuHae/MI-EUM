@@ -17,6 +17,7 @@ public class Stage : MonoBehaviour {
     public bool getFall() {
         return this.fall;
     }
+    private Score score;
 
     public Cube CreateCube(Transform parent, Vector3 position, Color color, int order = 1) {
         var go = Instantiate(cubePrefab);
@@ -38,6 +39,7 @@ public class Stage : MonoBehaviour {
     private void Start() {
         halfWidth = Mathf.RoundToInt(boardWidth * 0.5f);
         halfHeight = Mathf.RoundToInt(boardHeight * 0.5f);
+        score = GameObject.Find("Score").GetComponent<Score>();
         CreateTetracube();
     }
 
@@ -208,7 +210,6 @@ public class Stage : MonoBehaviour {
 
     void AddToBoard(Transform root)
     {
-        Score score = GameObject.Find("Score").GetComponent<Score>();
         while (root.childCount > 0)
         {
             var node = root.GetChild(0);
@@ -230,6 +231,7 @@ public class Stage : MonoBehaviour {
     void CheckBoardColumn() {
         bool isCleared = false;
         int fullBlockNum = 4 * boardWidth;
+        int clearedLine = 0;
         foreach (Transform column in boardNode) {
             if (column.name == "trash") {
                 continue;
@@ -239,12 +241,13 @@ public class Stage : MonoBehaviour {
                 foreach (Transform tile in column) {
                     Destroy(tile.gameObject);
                 }
-
                 column.DetachChildren();
+                clearedLine += 1;
                 isCleared = true;
             }
         }
         if (isCleared) {
+            score.addScore(clearedLine);
             for (int i = 0; i < boardHeight; ++i) {
                 var column = boardNode.Find(i.ToString());
 
