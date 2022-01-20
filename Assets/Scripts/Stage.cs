@@ -1,8 +1,11 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class Stage : MonoBehaviour {
     [Header("Editor Objects")]
     public GameObject cubePrefab;
+    public GameObject projectionPrefab;
+    public GameObject projections;
     public Transform backgroundNode;
     public Transform boardNode;
     public Transform tetracubeNode;
@@ -31,6 +34,18 @@ public class Stage : MonoBehaviour {
         return cube;
     }
 
+    public Projection CreateProjection(Vector3 position, Color color, int order = 1) {
+        var go = Instantiate(projectionPrefab);
+        go.transform.localPosition = position;
+        go.transform.parent = projections.transform;
+
+        var projection = go.GetComponent<Projection>();
+        projection.color = color;
+        projection.sortingOrder = order;
+
+        return projection;
+    }
+
     private int halfWidth;
     private int halfHeight;
     private float nextFallTime;
@@ -40,6 +55,7 @@ public class Stage : MonoBehaviour {
         halfWidth = Mathf.RoundToInt(boardWidth * 0.5f);
         halfHeight = Mathf.RoundToInt(boardHeight * 0.5f);
         score = GameObject.Find("Score").GetComponent<Score>();
+        projections = GameObject.Find("Projections");
         CreateTetracube();
     }
 
@@ -90,6 +106,63 @@ public class Stage : MonoBehaviour {
         }
         if (isRotate) {
             RotateTetracube(rotDir);
+        }
+
+        foreach (Transform child in projections.transform) {
+            GameObject.Destroy(child.gameObject);
+        }
+
+        ShowCubeProjection();
+    }
+
+    //solution 2. calculate x, z by column and get min(y of tetracube, max(board)) 
+    //ㅁ 바깥에 위치한 건 바닥으로 projection
+    //미리 simulation을 깔아두고 투명도 조절: 이건 큐브 이동에 따라 효율성이 떨어질지도
+    
+    private void ShowCubeProjection(){
+        Color lemon = new Color32(255, 243, 79, 130);
+
+        HashSet<string> xz_position = new HashSet<string>();
+
+        for (int i = 0; i < tetracubeNode.childCount; ++i)
+        {
+            var node = tetracubeNode.GetChild(i);
+
+            int x = Mathf.RoundToInt(node.transform.position.x);
+            int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
+            int z = Mathf.RoundToInt(node.transform.position.z);
+
+            if (y < 0 || (xz_position.Contains(x.ToString() + ", " + z.ToString())))
+                continue;
+            
+            xz_position.Add(x.ToString() + ", " + z.ToString());
+            
+            int absx = Mathf.Abs(x);
+            int absz = Mathf.Abs(z);
+            if ((absx == 2 || absz == 2) && absx <= 2 && absz <= 2) {
+                bool b = true;
+                for(int j = y-1; j >= 0; j--){
+                    var column = boardNode.Find(j.ToString());
+                    if(column.Find(x.ToString() + ", " + z.ToString()) != null){
+                        CreateProjection(new Vector3(x, j + 1.1f, z), lemon);
+                        b = false;
+                        break;
+                    }
+                }
+                if (b) {
+                    CreateProjection(new Vector3(x, 0.1f, z), lemon);
+                }
+            } else {
+                CreateProjection(new Vector3(x, 0.1f, z), lemon);
+            }
+ 
+
+            /*
+            1 아무것도 없을 때: (그냥 board 바닥 +) y=0 구역
+            2 블럭이 있을 때: 해당 x, z의 블럭에 있는 y값을 전부 찾은 뒤
+            내려오는 블럭보다 작은 값들 중 최댓값
+            */
+
         }
     }
 
