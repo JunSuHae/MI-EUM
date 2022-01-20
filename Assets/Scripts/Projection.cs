@@ -21,7 +21,7 @@ public class Projection : MonoBehaviour {
         }
     }
 
-    Renderer renderer;
+    new Renderer renderer;
 
     private void Awake() {
         renderer = GetComponent<Renderer>();
