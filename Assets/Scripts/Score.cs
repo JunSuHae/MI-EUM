@@ -32,8 +32,11 @@ public class Score : MonoBehaviour {
                 break;
         }
     }
-    
+    public void addScoreByUpdate() {
+        score += 1;
+    }
+
     public void substractScore() {
-        score -= 500;
+        score -= 50;
     }
 }

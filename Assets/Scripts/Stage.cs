@@ -6,6 +6,7 @@ public class Stage : MonoBehaviour {
     public Transform backgroundNode;
     public Transform boardNode;
     public Transform tetracubeNode;
+    public GameObject gameoverPanel;
 
     [Header("Game Settings")]
     [Range(4, 40)]
@@ -41,55 +42,66 @@ public class Stage : MonoBehaviour {
         halfHeight = Mathf.RoundToInt(boardHeight * 0.5f);
         score = GameObject.Find("Score").GetComponent<Score>();
         CreateTetracube();
+        gameoverPanel.SetActive(false);
     }
 
     private void Update() {
-        int moveDir = 0;
-        int rotDir = 0;
-        bool isRotate = false;
-        // Move
-        if (Input.GetKeyDown(KeyCode.LeftArrow)) {
-            moveDir = 1;
+        GameObject lastColumn = GameObject.Find((boardHeight - 1).ToString());
+        if (lastColumn.transform.childCount != 0) {
+            gameoverPanel.SetActive(true);
         }
-        if (Input.GetKeyDown(KeyCode.RightArrow)) {
-            moveDir = 2;
-        }
-
-        if (Input.GetKeyDown(KeyCode.UpArrow)) {
-            moveDir = 3;
-        }
-        if (Input.GetKeyDown(KeyCode.DownArrow)) {
-            moveDir = 4;
-        }
-
-        // Rotate
-        if (Input.GetKeyDown(KeyCode.W)) {
-            rotDir = 1;
-            isRotate = true;
-        }
-        if (Input.GetKeyDown(KeyCode.A)) {
-            rotDir = 2;
-            isRotate = true;
-        }
-        if (Input.GetKeyDown(KeyCode.D)) {
-            rotDir = 3;
-            isRotate = true;
-        }
-
-        if (Time.time > nextFallTime) {
-            nextFallTime = Time.time + fallCycle;
-            moveDir = -1;
-            isRotate = false;
-            fall = true;
+        if (gameoverPanel.activeSelf) {
+            if (Input.GetKeyDown(KeyCode.Escape)) {
+                UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+            }
         } else {
-            fall = false;
-        }
-        
-        if (moveDir != 0) {
-            MoveTetracube(moveDir);
-        }
-        if (isRotate) {
-            RotateTetracube(rotDir);
+            int moveDir = 0;
+            int rotDir = 0;
+            bool isRotate = false;
+            // Move
+            if (Input.GetKeyDown(KeyCode.LeftArrow)) {
+                moveDir = 1;
+            }
+            if (Input.GetKeyDown(KeyCode.RightArrow)) {
+                moveDir = 2;
+            }
+
+            if (Input.GetKeyDown(KeyCode.UpArrow)) {
+                moveDir = 3;
+            }
+            if (Input.GetKeyDown(KeyCode.DownArrow)) {
+                moveDir = 4;
+            }
+
+            // Rotate
+            if (Input.GetKeyDown(KeyCode.W)) {
+                rotDir = 1;
+                isRotate = true;
+            }
+            if (Input.GetKeyDown(KeyCode.A)) {
+                rotDir = 2;
+                isRotate = true;
+            }
+            if (Input.GetKeyDown(KeyCode.D)) {
+                rotDir = 3;
+                isRotate = true;
+            }
+
+            if (Time.time > nextFallTime) {
+                nextFallTime = Time.time + fallCycle;
+                moveDir = -1;
+                isRotate = false;
+                fall = true;
+            } else {
+                fall = false;
+            }
+
+            if (moveDir != 0) {
+                MoveTetracube(moveDir);
+            }
+            if (isRotate) {
+                RotateTetracube(rotDir);
+            }
         }
     }
 
@@ -145,7 +157,6 @@ public class Stage : MonoBehaviour {
         moveDir = Quaternion.Euler(0, rotAngle, 0) * moveDir;
 
         tetracubeNode.transform.position += moveDir;
-
         if (!CanMoveTo(tetracubeNode))
         {
             tetracubeNode.transform.position = oldPos;
