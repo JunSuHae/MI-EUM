@@ -260,6 +260,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cubePrefab: {fileID: 2340294962021202897, guid: 2727982bf8a7f3446b80b1959408f979, type: 3}
+  projectionPrefab: {fileID: 2340294962021202897, guid: baae8c8339f13c144a4cb7dd552e7d0a, type: 3}
   backgroundNode: {fileID: 517576867}
   boardNode: {fileID: 1282023540}
   tetracubeNode: {fileID: 575514606}
