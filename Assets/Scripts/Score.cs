@@ -15,6 +15,24 @@ public class Score : MonoBehaviour {
     void Update() {
         scoreText.text = "Score: " + score.ToString();
     }
+    
+    public void addScore(int line) {
+        switch(line) {
+            case 1:
+                score += 100;
+                break;
+            case 2:
+                score += 400;
+                break;
+            case 3:
+                score += 900;
+                break;
+            case 4:
+                score += 1600;
+                break;
+        }
+    }
+    
     public void substractScore() {
         score -= 500;
     }
