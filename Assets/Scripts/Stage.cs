@@ -120,6 +120,8 @@ public class Stage : MonoBehaviour {
     //미리 simulation을 깔아두고 투명도 조절: 이건 큐브 이동에 따라 효율성이 떨어질지도
     
     private void ShowCubeProjection(){
+        Color lemon = new Color32(255, 243, 79, 130);
+
         HashSet<string> xz_position = new HashSet<string>();
 
         for (int i = 0; i < tetracubeNode.childCount; ++i)
@@ -135,10 +137,25 @@ public class Stage : MonoBehaviour {
             
             xz_position.Add(x.ToString() + ", " + z.ToString());
             
-            var column = boardNode.Find(y.ToString());
-            
-            if(column.childCount == 0)
-                CreateProjection(new Vector3(x, 0.0f, z), Color.red);
+            int absx = Mathf.Abs(x);
+            int absz = Mathf.Abs(z);
+            if ((absx == 2 || absz == 2) && absx <= 2 && absz <= 2) {
+                bool b = true;
+                for(int j = y-1; j >= 0; j--){
+                    var column = boardNode.Find(j.ToString());
+                    if(column.Find(x.ToString() + ", " + z.ToString()) != null){
+                        CreateProjection(new Vector3(x, j + 1.1f, z), lemon);
+                        b = false;
+                        break;
+                    }
+                }
+                if (b) {
+                    CreateProjection(new Vector3(x, 0.1f, z), lemon);
+                }
+            } else {
+                CreateProjection(new Vector3(x, 0.1f, z), lemon);
+            }
+ 
 
             /*
             1 아무것도 없을 때: (그냥 board 바닥 +) y=0 구역
@@ -146,17 +163,6 @@ public class Stage : MonoBehaviour {
             내려오는 블럭보다 작은 값들 중 최댓값
             */
 
-            /*if (y < 0)
-                return false;
-
-            var column = boardNode.Find(y.ToString());
-
-            if (column != null && column.Find(x.ToString() + ", " + z.ToString()) != null) {
-                return false;
-            }*/
-
-            //node.parent = boardNode.Find(y.ToString());
-            //node.name = x.ToString() + ", " + z.ToString();
         }
     }
 
