@@ -164,9 +164,11 @@ public class Stage : MonoBehaviour {
     // }
     
     public void RotateTetracube(int rotDir) {
+        Vector3 oldPos = tetracubeNode.transform.position;
+        Quaternion oldRot = tetracubeNode.transform.rotation;
         float rotAngle = GameObject.Find("CameraBase").transform.eulerAngles.y;
-        Debug.Log(rotAngle);
         tetracubeNode.Rotate(new Vector3(0, -rotAngle, 0), Space.World);
+
         switch (rotDir) {
             case 1:
                 tetracubeNode.Rotate(new Vector3(0, 90, 0), Space.World);
@@ -179,6 +181,12 @@ public class Stage : MonoBehaviour {
                 break;
         }
         tetracubeNode.Rotate(new Vector3(0, rotAngle, 0), Space.World);
+
+        if (!CanRotateTo(tetracubeNode))
+        {
+            tetracubeNode.transform.position = oldPos;
+            tetracubeNode.transform.rotation = oldRot;
+        }
     }
 
     bool CanMoveTo(Transform root)
@@ -195,6 +203,25 @@ public class Stage : MonoBehaviour {
 
             if (y < 0)
                 return false;
+
+            var column = boardNode.Find(y.ToString());
+
+            if (column != null && column.Find(x.ToString() + ", " + z.ToString()) != null) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    
+    bool CanRotateTo(Transform root)
+    {
+        for (int i = 0; i < root.childCount; ++i)
+        {
+            var node = root.GetChild(i);
+            int x = Mathf.RoundToInt(node.transform.position.x);
+            int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
+            int z = Mathf.RoundToInt(node.transform.position.z);
 
             var column = boardNode.Find(y.ToString());
 
