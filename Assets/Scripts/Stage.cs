@@ -10,6 +10,10 @@ public class Stage : MonoBehaviour {
     public Transform boardNode;
     public Transform tetracubeNode;
     public GameObject gameoverPanel;
+    public GameObject pausePanel;
+    public GameObject startPanel;
+    private GameObject[] panels;
+    private string gameState;
 
     [Header("Game Settings")]
     [Range(4, 40)]
@@ -58,75 +62,95 @@ public class Stage : MonoBehaviour {
         score = GameObject.Find("Score").GetComponent<Score>();
         projections = GameObject.Find("Projections");
         CreateTetracube();
-        gameoverPanel.SetActive(false);
+        panels = new GameObject[] { startPanel, pausePanel, gameoverPanel };
+        gameState = "start";
+        ControlScene(gameState);
     }
 
     private void Update() {
+        ControlScene(gameState);
+
         GameObject lastColumn = GameObject.Find((boardHeight - 1).ToString());
         if (lastColumn.transform.childCount != 0) {
-            gameoverPanel.SetActive(true);
+            gameState = "end";
+            //gameoverPanel.SetActive(true);
         }
+        switch (gameState) {
+            case "start":
+                break;
+            case "game":
+                int moveDir = 0;
+                int rotDir = 0;
+                bool isRotate = false;
+                // Move
+                if (Input.GetKeyDown(KeyCode.LeftArrow)) {
+                    moveDir = 3;
+                }
+                if (Input.GetKeyDown(KeyCode.RightArrow)) {
+                    moveDir = 4;
+                }
+
+                if (Input.GetKeyDown(KeyCode.UpArrow)) {
+                    moveDir = 2;
+                }
+                if (Input.GetKeyDown(KeyCode.DownArrow)) {
+                    moveDir = 1;
+                }
+
+                // Rotate
+                if (Input.GetKeyDown(KeyCode.W)) {
+                    rotDir = 1;
+                    isRotate = true;
+                }
+                if (Input.GetKeyDown(KeyCode.A)) {
+                    rotDir = 2;
+                    isRotate = true;
+                }
+                if (Input.GetKeyDown(KeyCode.D)) {
+                    rotDir = 3;
+                    isRotate = true;
+                }
+
+                if (Time.time > nextFallTime) {
+                    nextFallTime = Time.time + fallCycle;
+                    moveDir = -1;
+                    isRotate = false;
+                    fall = true;
+                } else {
+                    fall = false;
+                }
+
+                if (moveDir != 0) {
+                    MoveTetracube(moveDir);
+                }
+                if (isRotate) {
+                    RotateTetracube(rotDir);
+                }
+
+                foreach (Transform child in projections.transform) {
+                    GameObject.Destroy(child.gameObject);
+                }
+
+                ShowCubeProjection();
+                break;
+            case "pause":
+                break;
+            case "end":
+                if (Input.GetKeyDown(KeyCode.Escape)) {
+                    UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+                }
+                break;
+        }
+
         if (gameoverPanel.activeSelf) {
-            if (Input.GetKeyDown(KeyCode.Escape)) {
-                UnityEngine.SceneManagement.SceneManager.LoadScene(0);
-            }
-        } else {
-            int moveDir = 0;
-            int rotDir = 0;
-            bool isRotate = false;
-            // Move
-            if (Input.GetKeyDown(KeyCode.LeftArrow)) {
-                moveDir = 3;
-            }
-            if (Input.GetKeyDown(KeyCode.RightArrow)) {
-                moveDir = 4;
-            }
-
-            if (Input.GetKeyDown(KeyCode.UpArrow)) {
-                moveDir = 2;
-            }
-            if (Input.GetKeyDown(KeyCode.DownArrow)) {
-                moveDir = 1;
-            }
-
-            // Rotate
-            if (Input.GetKeyDown(KeyCode.W)) {
-                rotDir = 1;
-                isRotate = true;
-            }
-            if (Input.GetKeyDown(KeyCode.A)) {
-                rotDir = 2;
-                isRotate = true;
-            }
-            if (Input.GetKeyDown(KeyCode.D)) {
-                rotDir = 3;
-                isRotate = true;
-            }
-
-            if (Time.time > nextFallTime) {
-                nextFallTime = Time.time + fallCycle;
-                moveDir = -1;
-                isRotate = false;
-                fall = true;
-            } else {
-                fall = false;
-            }
             
-            if (moveDir != 0) {
-                MoveTetracube(moveDir);
-            }
-            if (isRotate) {
-                RotateTetracube(rotDir);
-            }
-
-            foreach (Transform child in projections.transform) {
-                GameObject.Destroy(child.gameObject);
-            }
-
-            ShowCubeProjection();
+        } else {
         }
     }
-
+    public void Restart() {
+        LoadScene();
+        gameState = "game";
+    }
     public void LoadScene() {
         UnityEngine.SceneManagement.SceneManager.LoadScene(0);
     }
@@ -395,7 +419,7 @@ public class Stage : MonoBehaviour {
         }
     }
 
-private void CreateTetracube() {
+    private void CreateTetracube() {
         int index = Random.Range(0, 8);
         // Debug.Log(index);
         Color32 color = Color.white;
@@ -483,6 +507,34 @@ private void CreateTetracube() {
                 CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color);
                 CreateCube(tetracubeNode, new Vector3(0f, 1f, 1f), color);
                 // Debug.Log("1");
+                break;
+        }
+    }
+
+    private void TurnOffAllPanels() {
+        foreach (GameObject panel in panels) {
+            panel.SetActive(false);
+        }
+    }
+
+    public void ControlScene(string newGameState) {
+        // start == 0, game == 1, pause == 2, end == 3
+        gameState = newGameState;
+        switch(newGameState) {
+            case "start":
+                TurnOffAllPanels();
+                startPanel.SetActive(true);
+                break;
+            case "game":
+                TurnOffAllPanels();
+                break;
+            case "pause":
+                TurnOffAllPanels();
+                pausePanel.SetActive(true);
+                break;
+            case "end":
+                TurnOffAllPanels();
+                gameoverPanel.SetActive(true);
                 break;
         }
     }
