@@ -16,6 +16,8 @@ public class DownScript : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {
         if (Time.time - downTime < 0.2f) {
             if (active) {
+                active = false;
+                this.GetComponent<Image>().color = Color.white;
                 Stage.stage.DownButtonClicked();
             } else {
                 active = true;
@@ -28,7 +30,7 @@ public class DownScript : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     }
 
     public void Update() {
-        if (Time.time - downTime > 0.3f) {
+        if (active && Time.time - downTime > 0.3f) {
             active = false;
             this.GetComponent<Image>().color = Color.white;
         }

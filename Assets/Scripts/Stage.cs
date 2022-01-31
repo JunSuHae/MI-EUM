@@ -278,7 +278,8 @@ public class Stage : MonoBehaviour {
                 AddToBoard(tetracubeNode);
                 CheckBoardColumn();
                 CreateTetracube();
-                fallCycle = 1.0f;
+                if (downy) fallCycle = 0.3f;
+                else fallCycle = 1.0f;
             }
         }
     }

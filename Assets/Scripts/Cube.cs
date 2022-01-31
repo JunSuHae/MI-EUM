@@ -21,7 +21,7 @@ public class Cube : MonoBehaviour {
         }
     }
 
-    new Renderer renderer;
+    Renderer renderer;
 
     private void Awake() {
         renderer = GetComponent<Renderer>();
