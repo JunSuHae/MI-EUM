@@ -36,4 +36,7 @@ public class Score : MonoBehaviour {
     public void substractScore() {
         score -= 500;
     }
+    public int getScore() {
+        return score;
+    }
 }

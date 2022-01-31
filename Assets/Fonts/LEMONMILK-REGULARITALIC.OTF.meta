@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 158d69683f59f2d489494907c2750a31
+guid: 70d702a783010604e9786cbd5b54b247
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -9,9 +9,9 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - Hanley Pro
+  - LEMON MILK
   fallbackFontReferences:
-  - {fileID: 12800000, guid: f4643fae035fc4946b91f844599f4a87, type: 3}
+  - {fileID: 12800000, guid: 60c82720d9c36bf4e8b6548eab5c9802, type: 3}
   customCharacters: 
   fontRenderingMode: 0
   ascentCalculationMode: 1

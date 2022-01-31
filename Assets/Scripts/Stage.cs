@@ -1,8 +1,10 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class Stage : MonoBehaviour {
     [Header("Editor Objects")]
+    public static Stage stage;
     public GameObject cubePrefab;
     public GameObject projectionPrefab;
     public GameObject projections;
@@ -13,6 +15,7 @@ public class Stage : MonoBehaviour {
     public GameObject pausePanel;
     public GameObject startPanel;
     private GameObject[] panels;
+    public Text result;
     private string gameState;
 
     [Header("Game Settings")]
@@ -27,7 +30,7 @@ public class Stage : MonoBehaviour {
     }
     private Score score;
 
-    public Cube CreateCube(Transform parent, Vector3 position, Color color, int order = 1) {
+    public Cube CreateCube(Transform parent, Vector3 position, Color color, Color emission, float intensity, int order = 1) {
         var go = Instantiate(cubePrefab);
         go.transform.parent = parent;
         go.transform.localPosition = position;
@@ -35,6 +38,8 @@ public class Stage : MonoBehaviour {
         var cube = go.GetComponent<Cube>();
         cube.color = color;
         cube.sortingOrder = order;
+        
+        go.GetComponent<Renderer>().material.SetColor("_EmissionColor", emission * Mathf.Pow(2.0f, intensity));
 
         return cube;
     }
@@ -54,9 +59,10 @@ public class Stage : MonoBehaviour {
     private int halfWidth;
     private int halfHeight;
     private float nextFallTime;
-    
+    private bool downy = false;
 
     private void Start() {
+        stage = this;
         halfWidth = Mathf.RoundToInt(boardWidth * 0.5f);
         halfHeight = Mathf.RoundToInt(boardHeight * 0.5f);
         score = GameObject.Find("Score").GetComponent<Score>();
@@ -73,6 +79,7 @@ public class Stage : MonoBehaviour {
         GameObject lastColumn = GameObject.Find((boardHeight - 1).ToString());
         if (lastColumn.transform.childCount != 0) {
             gameState = "end";
+            result.text = score.getScore().ToString();
             //gameoverPanel.SetActive(true);
         }
         switch (gameState) {
@@ -113,6 +120,7 @@ public class Stage : MonoBehaviour {
 
                 if (Time.time > nextFallTime) {
                     nextFallTime = Time.time + fallCycle;
+                    maxFallTime = Time.time + 1.0f;
                     moveDir = -1;
                     isRotate = false;
                     fall = true;
@@ -181,7 +189,8 @@ public class Stage : MonoBehaviour {
             int absz = Mathf.Abs(z);
             if ((absx == 2 || absz == 2) && absx <= 2 && absz <= 2) {
                 bool b = true;
-                for(int j = y-1; j >= 0; j--){
+                int j = y-2;
+                for (j = y-2; j >= 0; j--){
                     var column = boardNode.Find(j.ToString());
                     if(column.Find(x.ToString() + ", " + z.ToString()) != null){
                         CreateProjection(new Vector3(x, j + 1.05f, z), lemon);
@@ -189,7 +198,7 @@ public class Stage : MonoBehaviour {
                         break;
                     }
                 }
-                if (b) {
+                if (j == -1 && b) {
                     CreateProjection(new Vector3(x, 0.05f, z), lemon);
                 }
             } else {
@@ -269,6 +278,7 @@ public class Stage : MonoBehaviour {
                 AddToBoard(tetracubeNode);
                 CheckBoardColumn();
                 CreateTetracube();
+                fallCycle = 1.0f;
             }
         }
     }
@@ -419,10 +429,17 @@ public class Stage : MonoBehaviour {
         }
     }
 
+    // int globalindex = 0;
+
     private void CreateTetracube() {
+        // int index = globalindex % 8;
+        // globalindex++;
         int index = Random.Range(0, 8);
+        // int index = 6;
         // Debug.Log(index);
         Color32 color = Color.white;
+        Color32 emission;
+        float intensity;
 
         tetracubeNode.rotation = Quaternion.identity;
         tetracubeNode.position = new Vector3(0f, boardHeight + 0.5f, 0f);
@@ -431,81 +448,97 @@ public class Stage : MonoBehaviour {
         switch (index) {
             // Cube(1) : �ϴû�
             case 0:
-                color = new Color32(115, 251, 253, 255);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color);
-                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 1.0f, 0.0f), color);
+                color = new Color32(255, 255, 255, 255);
+                emission = new Color32(0, 219, 219, 255);
+                intensity = 3.0f;
+                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(0.0f, 1.0f, 0.0f), color, emission, intensity);
                 // Debug.Log("1");
                 break;
 
             // Cube(2) : �Ķ���
             case 1:
                 color = new Color32(0, 33, 245, 255);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color);
-                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color);
-                CreateCube(tetracubeNode, new Vector3(1.0f, 1.0f, 0.0f), color);
+                emission = new Color32(4, 4, 255, 255);
+                intensity = 3.0f;
+                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(1.0f, 1.0f, 0.0f), color, emission, intensity);
                 // Debug.Log("1");
                 break;
 
             // Cube(3) : �ֻ�
             case 2:
-                color = new Color32(243, 168, 59, 255);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color);
-                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color);
-                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 1.0f), color);
+                color = new Color32(255, 195, 0, 255);
+                emission = new Color32(234, 4, 0, 255);
+                intensity = 3.0f;
+                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 1.0f), color, emission, intensity);
                 // Debug.Log("1");
                 break;
 
             // Cube(4) : �����
             case 3:
-                color = new Color32(255, 253, 84, 255);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color);
-                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 2.0f), color);
+                color = new Color32(16, 0, 255, 255);
+                emission = new Color32(224, 214, 0, 255);
+                intensity = 3.0f;
+                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 2.0f), color, emission, intensity);
                 // Debug.Log("1");
                 break;
 
             // Cube 5 : ������
             case 4:
-                color = new Color32(0, 0, 0, 255);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color);
-                CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, -1f), color);
+                color = new Color32(0, 255, 212, 255);
+                emission = new Color32(9, 215, 0, 255);
+                intensity = 3.0f;
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, -1f), color, emission, intensity);
                 // Debug.Log("1");
                 break;
 
             // Cube 6 : �Ͼ��
             case 5:
-                color = new Color32(255, 255, 255, 255);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color);
-                CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color);
-                CreateCube(tetracubeNode, new Vector3(-1f, 0f, 1f), color);
+                color = new Color32(0, 255, 216, 255);
+                emission = new Color32(255, 0, 178, 255);
+                intensity = 3.0f;
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(-1f, 0f, 1f), color, emission, intensity);
                 // Debug.Log("1");
                 break;
 
             // Cube 7 : ���ֻ�
             case 6:
-                color = new Color32(155, 47, 246, 255);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, -1f), color);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 2f), color);
+                color = new Color32(255, 95, 196, 255);
+                emission = new Color32(2, 0, 255, 255);
+                intensity = 3.0f;
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, -1f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, 2f), color, emission, intensity);
                 // Debug.Log("1");
                 break;
 
             // Cube 8 : ������
             case 7:
-                color = new Color32(235, 51, 35, 255);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color);
-                CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color);
-                CreateCube(tetracubeNode, new Vector3(0f, 1f, 1f), color);
+                color = new Color32(255, 255, 255, 255);
+                emission = new Color32(228, 0, 0, 255);
+                intensity = 3.0f;
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(0f, 1f, 1f), color, emission, intensity);
                 // Debug.Log("1");
                 break;
         }
@@ -537,5 +570,23 @@ public class Stage : MonoBehaviour {
                 gameoverPanel.SetActive(true);
                 break;
         }
+    }
+
+    private float maxFallTime;
+    public void DownButtonPressed() {
+        downy = true;
+        maxFallTime = nextFallTime;
+        nextFallTime = Mathf.Min(maxFallTime, Time.time + 0.3f);
+        fallCycle = 0.3f;
+    }
+    public void DownButtonReleased() {
+        downy = false;
+        nextFallTime = maxFallTime;
+        fallCycle = 1.0f;
+    }
+    public void DownButtonClicked() {
+        downy = false;
+        nextFallTime = Time.time;
+        fallCycle = 0.03f;
     }
 }
