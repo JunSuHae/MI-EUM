@@ -39,6 +39,7 @@ public class Stage : MonoBehaviour
         var go = Instantiate(cubePrefab);
         go.transform.parent = parent;
         go.transform.localPosition = position;
+        go.layer = 3;
 
         var cube = go.GetComponent<Cube>();
         cube.color = color;
@@ -52,7 +53,7 @@ public class Stage : MonoBehaviour
     public Projection CreateProjection(Vector3 position, Color color, int order = 1)
     {
         var go = Instantiate(projectionPrefab);
-        go.transform.localPosition = position;
+        go.transform.position = position;
         go.transform.parent = projections.transform;
 
         var projection = go.GetComponent<Projection>();
@@ -214,7 +215,7 @@ public class Stage : MonoBehaviour
 
     private void ShowCubeProjection()
     {
-        Color lemon = new Color32(255, 243, 79, 130);
+        Color lemon = new Color32(255, 255, 0, 0);
 
         HashSet<string> xz_position = new HashSet<string>();
 
@@ -245,7 +246,7 @@ public class Stage : MonoBehaviour
                             column = boardNode.Find(j.ToString());
                             if (column.Find(x.ToString() + ", " + z.ToString()) != null)
                             {
-                                CreateProjection(new Vector3(x, j + 1.05f, z), lemon);
+                                CreateProjection(new Vector3(x, j + 1.1f, z), lemon);
                                 b = false;
                                 break;
                             }
@@ -444,6 +445,9 @@ public class Stage : MonoBehaviour
                 score.substractScore();
             }
         }
+        foreach (Transform t in boardNode.Find("trash")) {
+            t.gameObject.GetComponent<Renderer>().material.DisableKeyword("_EMISSION");
+        }
     }
 
     void CheckBoardColumn()
@@ -516,7 +520,7 @@ public class Stage : MonoBehaviour
         // int index = globalindex % 8;
         // globalindex++;
         int index = Random.Range(0, 8);
-        // int index = 6;
+        // int index = 0;
         // Debug.Log(index);
         Color32 color = Color.white;
         Color32 emission;
@@ -532,7 +536,7 @@ public class Stage : MonoBehaviour
             case 0:
                 color = new Color32(255, 255, 255, 255);
                 emission = new Color32(0, 219, 219, 255);
-                intensity = 3.0f;
+                intensity = 2.9f;
                 CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity);
                 CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity);
                 CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity);
@@ -578,7 +582,7 @@ public class Stage : MonoBehaviour
 
             // Cube 5 : ������
             case 4:
-                color = new Color32(0, 255, 212, 255);
+                color = new Color32(84, 255, 0, 255);
                 emission = new Color32(9, 215, 0, 255);
                 intensity = 3.0f;
                 CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color, emission, intensity);
