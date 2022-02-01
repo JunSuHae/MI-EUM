@@ -39,4 +39,7 @@ public class Score : MonoBehaviour {
     public int getScore() {
         return score;
     }
+    public void initScore() {
+        score = 0;
+    }
 }

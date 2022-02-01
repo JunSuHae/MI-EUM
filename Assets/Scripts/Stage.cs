@@ -12,6 +12,7 @@ public class Stage : MonoBehaviour
     public Transform backgroundNode;
     public Transform boardNode;
     public Transform tetracubeNode;
+    public GameObject gamePanel;
     public GameObject gameoverPanel;
     public GameObject pausePanel;
     public GameObject startPanel;
@@ -74,7 +75,7 @@ public class Stage : MonoBehaviour
         score = GameObject.Find("Score").GetComponent<Score>();
         projections = GameObject.Find("Projections");
         CreateTetracube();
-        panels = new GameObject[] { startPanel, pausePanel, gameoverPanel };
+        panels = new GameObject[] { startPanel, pausePanel, gameoverPanel, gamePanel};
         oldGameState = "";
         gameState = "start";
         ControlScene(gameState);
@@ -84,18 +85,19 @@ public class Stage : MonoBehaviour
     {
         ControlScene(gameState);
 
-        GameObject lastColumn = GameObject.Find((boardHeight - 1).ToString());
-        if (lastColumn.transform.childCount != 0)
-        {
-            gameState = "end";
-            result.text = score.getScore().ToString();
-            //gameoverPanel.SetActive(true);
-        }
         switch (gameState)
         {
             case "start":
                 break;
             case "game":
+                GameObject lastColumn = GameObject.Find((boardHeight - 1).ToString());
+                if (lastColumn.transform.childCount != 0)
+                {
+                    gameState = "end";
+                    result.text = score.getScore().ToString();
+                    //gameoverPanel.SetActive(true);
+                    return;
+                }
                 int moveDir = 0;
                 int rotDir = 0;
                 bool isRotate = false;
@@ -182,10 +184,24 @@ public class Stage : MonoBehaviour
         {
         }
     }
+
+    public void ClearChildren(Transform t) {
+        foreach (Transform c in t) {
+            ClearChildren(c);
+            Destroy(c.gameObject);
+        }
+        t.DetachChildren();
+    }
     public void Restart()
     {
-        LoadScene();
         gameState = "game";
+        score.initScore();
+        Transform board = GameObject.Find("Board").transform;
+        foreach (Transform column in board) {
+            ClearChildren(column);
+        }
+        ClearChildren(tetracubeNode);
+        CreateTetracube();
     }
     public void LoadScene()
     {
@@ -217,28 +233,32 @@ public class Stage : MonoBehaviour
 
             int absx = Mathf.Abs(x);
             int absz = Mathf.Abs(z);
-            if ((absx == 2 || absz == 2) && absx <= 2 && absz <= 2)
-            {
-                bool b = true;
-                int j = y - 2;
-                for (j = y - 2; j >= 0; j--)
+            if (y > 0) {
+                if ((absx == 2 || absz == 2) && absx <= 2 && absz <= 2)
                 {
-                    var column = boardNode.Find(j.ToString());
-                    if (column.Find(x.ToString() + ", " + z.ToString()) != null)
-                    {
-                        CreateProjection(new Vector3(x, j + 1.05f, z), lemon);
-                        b = false;
-                        break;
+                    var column = boardNode.Find((y - 1).ToString());
+                    if (column.Find(x.ToString() + ", " + z.ToString()) == null) {
+                        bool b = true;
+                        int j = y - 2;
+                        for (j = y - 2; j >= 0; j--)
+                        {
+                            column = boardNode.Find(j.ToString());
+                            if (column.Find(x.ToString() + ", " + z.ToString()) != null)
+                            {
+                                CreateProjection(new Vector3(x, j + 1.05f, z), lemon);
+                                b = false;
+                                break;
+                            }
+                        }
+                        if (j == -1 && b)
+                        {
+                            CreateProjection(new Vector3(x, 0.05f, z), lemon);
+                        }
                     }
                 }
-                if (j == -1 && b)
-                {
-                    CreateProjection(new Vector3(x, 0.05f, z), lemon);
+                else {
+                    CreateProjection(new Vector3(x, 0.05f, z), Color.red);
                 }
-            }
-            else if (y > 0)
-            {
-                CreateProjection(new Vector3(x, 0.05f, z), Color.red);
             }
 
 
@@ -316,8 +336,10 @@ public class Stage : MonoBehaviour
                 AddToBoard(tetracubeNode);
                 CheckBoardColumn();
                 CreateTetracube();
-                if (downy) fallCycle = 0.3f;
+                if (downy) fallCycle = 0.2f;
                 else fallCycle = 1.0f;
+                nextFallTime = Time.time + fallCycle;
+                maxFallTime = Time.time + 1.0f;
             }
         }
     }
@@ -624,9 +646,18 @@ public class Stage : MonoBehaviour
             case "start":
                 TurnOffAllPanels();
                 startPanel.SetActive(true);
+                gameObject.SetActive(false);
                 break;
             case "game":
                 TurnOffAllPanels();
+                gamePanel.SetActive(true);
+                gameObject.SetActive(true);
+                break;
+            case "restart":
+                TurnOffAllPanels();
+                gamePanel.SetActive(true);
+                gameObject.SetActive(true);
+                Restart();
                 break;
             case "pause":
                 TurnOffAllPanels();
@@ -644,8 +675,8 @@ public class Stage : MonoBehaviour
     {
         downy = true;
         maxFallTime = nextFallTime;
-        nextFallTime = Mathf.Min(maxFallTime, Time.time + 0.3f);
-        fallCycle = 0.3f;
+        nextFallTime = Mathf.Min(maxFallTime, Time.time + 0.2f);
+        fallCycle = 0.2f;
     }
     public void DownButtonReleased()
     {
