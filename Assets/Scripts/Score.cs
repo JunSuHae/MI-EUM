@@ -13,7 +13,7 @@ public class Score : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        scoreText.text = "Score: " + score.ToString();
+        scoreText.text = score.ToString();
     }
     
     public void addScore(int line) {
@@ -35,5 +35,11 @@ public class Score : MonoBehaviour {
     
     public void substractScore() {
         score -= 500;
+    }
+    public int getScore() {
+        return score;
+    }
+    public void initScore() {
+        score = 0;
     }
 }
