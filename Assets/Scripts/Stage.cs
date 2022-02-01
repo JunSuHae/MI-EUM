@@ -387,8 +387,10 @@ public class Stage : MonoBehaviour
             int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
             int z = Mathf.RoundToInt(node.transform.position.z);
 
-            // if (x < 0 || x > boardWidth - 1)
-            //     return false;
+            if (x < -4 || x > boardWidth)
+                return false;
+            if (z < -4 || z > boardWidth)
+                return false;
 
             if (y < 0)
                 return false;

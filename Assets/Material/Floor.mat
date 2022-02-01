@@ -9,8 +9,8 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: Floor
   m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
-  m_ShaderKeywords: 
-  m_LightmapFlags: 4
+  m_ShaderKeywords: _EMISSION
+  m_LightmapFlags: 2
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 1
   m_CustomRenderQueue: 3000
@@ -125,9 +125,9 @@ Material:
     - _WorkflowMode: 1
     - _ZWrite: 0
     m_Colors:
-    - _BaseColor: {r: 0.99511737, g: 1, b: 0.82452834, a: 0.40392157}
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 0.39607844}
     - _Color: {r: 0.94000006, g: 0, b: 1, a: 1}
-    - _EmissionColor: {r: 0.087357506, g: 0.06860537, b: 0, a: 1}
+    - _EmissionColor: {r: 0.6792453, g: 0.079458855, b: 0.079458855, a: 1}
     - _Flip: {r: 1, g: 1, b: 1, a: 1}
     - _HueVariation: {r: 1, g: 0.5, b: 0, a: 0.1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
