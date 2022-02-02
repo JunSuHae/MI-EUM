@@ -16,6 +16,7 @@ public class Stage : MonoBehaviour
     public GameObject gameoverPanel;
     public GameObject pausePanel;
     public GameObject startPanel;
+    public GameObject tutorialPanel;
     private GameObject[] panels;
     public Text result;
     private string oldGameState;
@@ -75,7 +76,7 @@ public class Stage : MonoBehaviour
         score = GameObject.Find("Score").GetComponent<Score>();
         projections = GameObject.Find("Projections");
         CreateTetracube();
-        panels = new GameObject[] { startPanel, pausePanel, gameoverPanel, gamePanel};
+        panels = new GameObject[] { startPanel, pausePanel, gameoverPanel, gamePanel, tutorialPanel };
         oldGameState = "";
         gameState = "start";
         ControlScene(gameState);
@@ -666,6 +667,10 @@ public class Stage : MonoBehaviour
             case "end":
                 TurnOffAllPanels();
                 gameoverPanel.SetActive(true);
+                break;
+            case "tutorial":
+                TurnOffAllPanels();
+                tutorialPanel.SetActive(true);
                 break;
         }
     }
