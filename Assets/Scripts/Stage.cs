@@ -9,6 +9,8 @@ public class Stage : MonoBehaviour
     public GameObject cubePrefab;
     public GameObject projectionPrefab;
     public GameObject projections;
+    public LifeLine lifeLine;
+    public GameObject lifePlane;
     public Transform backgroundNode;
     public Transform boardNode;
     public Transform tetracubeNode;
@@ -79,6 +81,7 @@ public class Stage : MonoBehaviour
         panels = new GameObject[] { startPanel, pausePanel, gameoverPanel, gamePanel};
         oldGameState = "";
         gameState = "start";
+        lifeLine.InitLife();
         ControlScene(gameState);
     }
 
@@ -197,6 +200,8 @@ public class Stage : MonoBehaviour
     {
         gameState = "game";
         score.initScore();
+        lifeLine.InitLife();
+        // lifePlane.transform.localScale = new Vector3(1, 0, 1);
         Transform board = GameObject.Find("Board").transform;
         foreach (Transform column in board) {
             ClearChildren(column);
@@ -327,20 +332,29 @@ public class Stage : MonoBehaviour
 
         tetracubeNode.transform.position += moveDir;
 
-        if (!CanMoveTo(tetracubeNode))
+        if (!CanShiftTo(tetracubeNode) || CanBeDeadAt(tetracubeNode))
         {
-            tetracubeNode.transform.position = oldPos;
-            tetracubeNode.transform.rotation = oldRot;
-
-            if ((int)moveDir.y == -1 && (int)moveDir.x == 0 && (int)moveDir.z == 0)
-            {
-                AddToBoard(tetracubeNode);
-                CheckBoardColumn();
-                CreateTetracube();
-                if (downy) fallCycle = 0.2f;
-                else fallCycle = 1.0f;
-                nextFallTime = Time.time + fallCycle;
-                maxFallTime = Time.time + 1.0f;
+            bool b = !CanFallTo(tetracubeNode) || !CanBeAliveAt(tetracubeNode);
+            if (!CanShiftTo(tetracubeNode)) {
+                tetracubeNode.transform.position = oldPos;
+                tetracubeNode.transform.rotation = oldRot;
+            }
+            if (moveDir.y == -1) {
+                foreach (Transform node in tetracubeNode) {
+                    int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
+                    if (y < 0) {
+                        DamageBy(node);
+                    }
+                }
+                if (b) {
+                    AddToBoard(tetracubeNode);
+                    CheckBoardColumn();
+                    CreateTetracube();
+                    if (downy) fallCycle = 0.2f;
+                    else fallCycle = 1.0f;
+                    nextFallTime = Time.time + fallCycle;
+                    maxFallTime = Time.time + 1.0f;
+                }
             }
         }
     }
@@ -352,6 +366,13 @@ public class Stage : MonoBehaviour
 
     public void RotateTetracube(int rotDir)
     {
+        foreach (Transform node in tetracubeNode) {
+            int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
+            if (y < 0) {
+                return;
+            }
+        }
+        
         Vector3 oldPos = tetracubeNode.transform.position;
         Quaternion oldRot = tetracubeNode.transform.rotation;
         float rotAngle = GameObject.Find("CameraBase").transform.eulerAngles.y;
@@ -371,18 +392,29 @@ public class Stage : MonoBehaviour
         }
         tetracubeNode.Rotate(new Vector3(0, rotAngle, 0), Space.World);
 
-        if (!CanRotateTo(tetracubeNode))
+        if (!CanShiftTo(tetracubeNode) || CanBeDeadAt(tetracubeNode))
         {
-            tetracubeNode.transform.position = oldPos;
-            tetracubeNode.transform.rotation = oldRot;
+            if (!CanShiftTo(tetracubeNode)) {
+                tetracubeNode.transform.position = oldPos;
+                tetracubeNode.transform.rotation = oldRot;
+            }
+            foreach (Transform node in tetracubeNode) {
+                int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
+                if (y < 0) {
+                    DamageBy(node);
+                }
+            }
         }
+    }
+
+    bool CanShiftTo(Transform root) {
+        return (CanMoveTo(root)) && CanFallTo(root) && CanBeAliveAt(root);
     }
 
     bool CanMoveTo(Transform root)
     {
-        for (int i = 0; i < root.childCount; ++i)
+        foreach (Transform node in root)
         {
-            var node = root.GetChild(i);
             int x = Mathf.RoundToInt(node.transform.position.x);
             int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
             int z = Mathf.RoundToInt(node.transform.position.z);
@@ -391,13 +423,31 @@ public class Stage : MonoBehaviour
                 return false;
             if (z < -4 || z > boardWidth)
                 return false;
-
-            if (y < 0)
+            
+            if ((Mathf.Abs(x) == 2 || Mathf.Abs(z) == 2) &&
+                (Mathf.Abs(x) <= 2 && Mathf.Abs(z) <= 2) && (y < 0))
+            {
                 return false;
+            }
+        }
 
-            var column = boardNode.Find(y.ToString());
+        return true;
+    }
+    bool CanFallTo(Transform root)
+    {
+        foreach (Transform node in root)
+        {
+            int x = Mathf.RoundToInt(node.transform.position.x);
+            int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
+            int z = Mathf.RoundToInt(node.transform.position.z);var column = boardNode.Find(y.ToString());
 
             if (column != null && column.Find(x.ToString() + ", " + z.ToString()) != null)
+            {
+                return false;
+            }
+
+            if ((Mathf.Abs(x) == 2 || Mathf.Abs(z) == 2) &&
+                (Mathf.Abs(x) <= 2 && Mathf.Abs(z) <= 2) && (y < 0))
             {
                 return false;
             }
@@ -406,24 +456,42 @@ public class Stage : MonoBehaviour
         return true;
     }
 
-    bool CanRotateTo(Transform root)
+    bool CanBeDeadAt(Transform root)
     {
-        for (int i = 0; i < root.childCount; ++i)
+        foreach (Transform node in root)
         {
-            var node = root.GetChild(i);
-            int x = Mathf.RoundToInt(node.transform.position.x);
             int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
-            int z = Mathf.RoundToInt(node.transform.position.z);
-
-            var column = boardNode.Find(y.ToString());
-
-            if (column != null && column.Find(x.ToString() + ", " + z.ToString()) != null)
-            {
-                return false;
-            }
+            if (y < 0)
+                return true;
         }
 
-        return true;
+        return false;
+    }
+
+    bool CanBeAliveAt(Transform root)
+    {
+        foreach (Transform node in root)
+        {
+            int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
+            if (y >= 0)
+                return true;
+        }
+
+        return false;
+    }
+
+    void DamageBy(Transform node) {
+        Material m = node.gameObject.GetComponent<Renderer>().material;
+        Debug.Log(lifeLine.Dead());
+        if (m.IsKeywordEnabled("_EMISSION")) {
+            m.DisableKeyword("_EMISSION");
+            lifeLine.Damage();
+            // lifeLine.transform.position = new Vector3(0, Mathf.Min(20.0f, 10.0f/maxLives * (maxLives - lives)), 0);
+            // lifePlane.transform.localScale = new Vector3(1, 2.0f/maxLives * (maxLives - lives), 1);
+            if (lifeLine.Dead()) {
+                ControlScene("end");
+            }
+        }
     }
 
     void AddToBoard(Transform root)
@@ -444,11 +512,8 @@ public class Stage : MonoBehaviour
             else
             {
                 node.parent = boardNode.Find("trash");
-                score.substractScore();
+                DamageBy(node);
             }
-        }
-        foreach (Transform t in boardNode.Find("trash")) {
-            t.gameObject.GetComponent<Renderer>().material.DisableKeyword("_EMISSION");
         }
     }
 
@@ -465,7 +530,7 @@ public class Stage : MonoBehaviour
             }
             if (column.transform.childCount == fullBlockNum)
             {
-                Debug.Log("Destroy");
+                // Debug.Log("Destroy");
                 foreach (Transform tile in column)
                 {
                     Destroy(tile.gameObject);
@@ -644,7 +709,7 @@ public class Stage : MonoBehaviour
     {
         // start == 0, game == 1, pause == 2, end == 3
         if (oldGameState == newGameState) return;
-        Debug.Log(oldGameState + ", " + newGameState);
+        // Debug.Log(oldGameState + ", " + newGameState);
         oldGameState = newGameState;
         gameState = newGameState;
         switch (newGameState)

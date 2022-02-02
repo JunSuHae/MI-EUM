@@ -33,7 +33,7 @@ public class Score : MonoBehaviour {
         }
     }
     
-    public void substractScore() {
+    public void subtractScore() {
         score -= 500;
     }
     public int getScore() {

@@ -28,7 +28,7 @@ public class Board : MonoBehaviour
     {
         if (stage.getFall()) {
             HandleTrash();
-            Debug.Log("handle trash");
+            // Debug.Log("handle trash");
         }
     }
 
