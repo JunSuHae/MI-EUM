@@ -199,7 +199,7 @@ public class Stage : MonoBehaviour
     public void Restart()
     {
         gameState = "game";
-        score.initScore();
+        score.initSC();
         lifeLine.InitLife();
         // lifePlane.transform.localScale = new Vector3(1, 0, 1);
         Transform board = GameObject.Find("Board").transform;
@@ -242,7 +242,7 @@ public class Stage : MonoBehaviour
             if (y > 0) {
                 if ((absx == 2 || absz == 2) && absx <= 2 && absz <= 2)
                 {
-                    var column = boardNode.Find((y - 1).ToString());
+                    var column = boardNode.Find((Mathf.Min(y, boardHeight) - 1).ToString());
                     if (column.Find(x.ToString() + ", " + z.ToString()) == null) {
                         bool b = true;
                         int j = y - 2;
@@ -489,13 +489,15 @@ public class Stage : MonoBehaviour
             // lifeLine.transform.position = new Vector3(0, Mathf.Min(20.0f, 10.0f/maxLives * (maxLives - lives)), 0);
             // lifePlane.transform.localScale = new Vector3(1, 2.0f/maxLives * (maxLives - lives), 1);
             if (lifeLine.Dead()) {
-                ControlScene("end");
+                gameState = "end";
+                result.text = score.getScore().ToString();
             }
         }
     }
 
     void AddToBoard(Transform root)
     {
+        int n = 0;
         while (root.childCount > 0)
         {
             var node = root.GetChild(0);
@@ -508,6 +510,7 @@ public class Stage : MonoBehaviour
             {
                 node.parent = boardNode.Find(y.ToString());
                 node.name = x.ToString() + ", " + z.ToString();
+                n += 1;
             }
             else
             {
@@ -515,6 +518,16 @@ public class Stage : MonoBehaviour
                 DamageBy(node);
             }
         }
+
+        score.addScore(n * 10);
+
+        if (n == 4) {
+            score.addCombo();
+        } else {
+            score.initCombo();
+        }
+
+
     }
 
     void CheckBoardColumn()
@@ -542,7 +555,7 @@ public class Stage : MonoBehaviour
         }
         if (isCleared)
         {
-            score.addScore(clearedLine);
+            score.addLineScore(clearedLine);
             for (int i = 0; i < boardHeight; ++i)
             {
                 var column = boardNode.Find(i.ToString());

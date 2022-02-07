@@ -6,40 +6,45 @@ using UnityEngine.UI;
 public class Score : MonoBehaviour {
     // Start is called before the first frame update
     private int score = 0;
+    private int combo = 0;
     public Text scoreText;
+    public Text comboText;
+
     void Start() {
-
+        SCUpdate();
     }
 
-    // Update is called once per frame
-    void Update() {
+    void SCUpdate() {
         scoreText.text = score.ToString();
+        comboText.text = combo.ToString();
+    }
+    public void initSC() {
+        score = 0;
+        combo = 0;
+        SCUpdate();
     }
     
-    public void addScore(int line) {
-        switch(line) {
-            case 1:
-                score += 100;
-                break;
-            case 2:
-                score += 400;
-                break;
-            case 3:
-                score += 900;
-                break;
-            case 4:
-                score += 1600;
-                break;
-        }
+    public void initScore() {
+        score = 0;
+        SCUpdate();
     }
-    
-    public void subtractScore() {
-        score -= 500;
+    public void addScore(int s) {
+        score += (int) (s * (1.0f + 0.1 * combo));
+        SCUpdate();
+    }
+    public void addLineScore(int line) {
+        addScore(line * line * 1000);
     }
     public int getScore() {
         return score;
     }
-    public void initScore() {
-        score = 0;
+
+    public void initCombo() {
+        combo = 0;
+        SCUpdate();
+    }
+    public void addCombo() {
+        combo += 1;
+        SCUpdate();
     }
 }
