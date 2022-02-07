@@ -19,6 +19,15 @@ public class Stage : MonoBehaviour
     public GameObject pausePanel;
     public GameObject startPanel;
     private GameObject[] panels;
+    public Material mat1;
+    public Material mat2;
+    public Material mat3;
+    public Material mat4;
+    public Material mat5;
+    public Material mat6;
+    public Material mat7;
+    public Material mat8;
+    private Material[] cubeMats;
     public Text result;
     private string oldGameState;
     private string gameState;
@@ -36,18 +45,21 @@ public class Stage : MonoBehaviour
     }
     private Score score;
 
-    public Cube CreateCube(Transform parent, Vector3 position, Color color, Color emission, float intensity, int order = 1)
+    public Cube CreateCube(Transform parent, Vector3 position, Color color, Color emission, float intensity, float s, float p, int index, int order = 1)
     {
-        var go = Instantiate(cubePrefab);
+        GameObject go = Instantiate(cubePrefab);
         go.transform.parent = parent;
         go.transform.localPosition = position;
         go.layer = 3;
 
         var cube = go.GetComponent<Cube>();
-        cube.color = color;
-        cube.sortingOrder = order;
-
-        go.GetComponent<Renderer>().material.SetColor("_EmissionColor", emission * Mathf.Pow(2.0f, intensity));
+        // cube.color = color;
+        // cube.emission = emission;
+        // cube.sortingOrder = order;
+        // cube.SetBlink(s, p);
+        
+        // go.GetComponent<Renderer>().material.SetColor("_EmissionColor", emission * Mathf.Pow(2.0f, intensity));
+        go.GetComponent<Renderer>().material = cubeMats[index];
 
         return cube;
     }
@@ -77,6 +89,7 @@ public class Stage : MonoBehaviour
         halfHeight = Mathf.RoundToInt(boardHeight * 0.5f);
         score = GameObject.Find("Score").GetComponent<Score>();
         projections = GameObject.Find("Projections");
+        cubeMats = new Material[] { mat1, mat2, mat3, mat4, mat5, mat6, mat7, mat8 };
         CreateTetracube();
         panels = new GameObject[] { startPanel, pausePanel, gameoverPanel, gamePanel};
         oldGameState = "";
@@ -580,13 +593,13 @@ public class Stage : MonoBehaviour
         }
     }
 
-    // int globalindex = 0;
+    int globalindex = 0;
 
     private void CreateTetracube()
     {
-        // int index = globalindex % 8;
-        // globalindex++;
-        int index = Random.Range(0, 8);
+        int index = globalindex % 8;
+        globalindex++;
+        // int index = Random.Range(0, 8);
         // int index = 0;
         // Debug.Log(index);
         Color32 color = Color.white;
@@ -596,6 +609,8 @@ public class Stage : MonoBehaviour
         tetracubeNode.rotation = Quaternion.identity;
         tetracubeNode.position = new Vector3(0f, boardHeight + 0.5f, 0f);
         // Debug.Log("switch");
+        float p = Random.Range(1.8f, 2.2f);
+        float s = Random.Range(0f, p);
 
         switch (index)
         {
@@ -604,10 +619,10 @@ public class Stage : MonoBehaviour
                 color = new Color32(255, 255, 255, 255);
                 emission = new Color32(0, 219, 219, 255);
                 intensity = 2.9f;
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 1.0f, 0.0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(0.0f, 1.0f, 0.0f), color, emission, intensity, s, p, index);
                 // Debug.Log("1");
                 break;
 
@@ -616,10 +631,10 @@ public class Stage : MonoBehaviour
                 color = new Color32(0, 33, 245, 255);
                 emission = new Color32(4, 4, 255, 255);
                 intensity = 3.0f;
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(1.0f, 1.0f, 0.0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(1.0f, 1.0f, 0.0f), color, emission, intensity, s, p, index);
                 // Debug.Log("1");
                 break;
 
@@ -628,10 +643,10 @@ public class Stage : MonoBehaviour
                 color = new Color32(255, 195, 0, 255);
                 emission = new Color32(234, 4, 0, 255);
                 intensity = 3.0f;
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 1.0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 1.0f), color, emission, intensity, s, p, index);
                 // Debug.Log("1");
                 break;
 
@@ -640,10 +655,10 @@ public class Stage : MonoBehaviour
                 color = new Color32(16, 0, 255, 255);
                 emission = new Color32(224, 214, 0, 255);
                 intensity = 3.0f;
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 2.0f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 2.0f), color, emission, intensity, s, p, index);
                 // Debug.Log("1");
                 break;
 
@@ -652,10 +667,10 @@ public class Stage : MonoBehaviour
                 color = new Color32(84, 255, 0, 255);
                 emission = new Color32(9, 215, 0, 255);
                 intensity = 3.0f;
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, -1f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, -1f), color, emission, intensity, s, p, index);
                 // Debug.Log("1");
                 break;
 
@@ -664,10 +679,10 @@ public class Stage : MonoBehaviour
                 color = new Color32(0, 255, 216, 255);
                 emission = new Color32(255, 0, 178, 255);
                 intensity = 3.0f;
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(-1f, 0f, 1f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(-1f, 0f, 1f), color, emission, intensity, s, p, index);
                 // Debug.Log("1");
                 break;
 
@@ -676,10 +691,10 @@ public class Stage : MonoBehaviour
                 color = new Color32(255, 95, 196, 255);
                 emission = new Color32(2, 0, 255, 255);
                 intensity = 3.0f;
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, -1f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 2f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, -1f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, 2f), color, emission, intensity, s, p, index);
                 // Debug.Log("1");
                 break;
 
@@ -688,10 +703,10 @@ public class Stage : MonoBehaviour
                 color = new Color32(255, 255, 255, 255);
                 emission = new Color32(228, 0, 0, 255);
                 intensity = 3.0f;
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0f, 1f, 1f), color, emission, intensity);
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color, emission, intensity, s, p, index);
+                CreateCube(tetracubeNode, new Vector3(0f, 1f, 1f), color, emission, intensity, s, p, index);
                 // Debug.Log("1");
                 break;
         }
