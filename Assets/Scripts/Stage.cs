@@ -14,11 +14,13 @@ public class Stage : MonoBehaviour
     public Transform backgroundNode;
     public Transform boardNode;
     public Transform tetracubeNode;
+    public Transform nextTetracubeNode;
     public GameObject gamePanel;
     public GameObject gameoverPanel;
     public GameObject pausePanel;
     public GameObject startPanel;
     private GameObject[] panels;
+    public GameObject nextCube;
     public Text result;
     private string oldGameState;
     private string gameState;
@@ -36,12 +38,26 @@ public class Stage : MonoBehaviour
     }
     private Score score;
 
-    public Cube CreateCube(Transform parent, Vector3 position, Color color, Color emission, float intensity, int order = 1)
+    public void ChangeAllLayer(GameObject go, int layernum)
+    {
+        ChangeLayersRecursively(go.transform, layernum);
+    }
+    
+    public void ChangeLayersRecursively(Transform trans, int layernum)
+    {
+        trans.gameObject.layer = layernum;
+        foreach(Transform child in trans)
+        {
+            ChangeLayersRecursively(child, layernum);
+        }
+    }
+
+    public Cube CreateCube(Transform parent, Vector3 position, Color color, Color emission, float intensity, int order = 1, int layernum = 3)
     {
         var go = Instantiate(cubePrefab);
         go.transform.parent = parent;
         go.transform.localPosition = position;
-        go.layer = 3;
+        ChangeAllLayer(go, layernum);
 
         var cube = go.GetComponent<Cube>();
         cube.color = color;
@@ -69,6 +85,7 @@ public class Stage : MonoBehaviour
     private int halfHeight;
     private float nextFallTime;
     private bool downy = false;
+    private int nextindex;
 
     private void Start()
     {
@@ -77,6 +94,7 @@ public class Stage : MonoBehaviour
         halfHeight = Mathf.RoundToInt(boardHeight * 0.5f);
         score = GameObject.Find("Score").GetComponent<Score>();
         projections = GameObject.Find("Projections");
+        nextindex = Random.Range(0, 8);
         CreateTetracube();
         panels = new GameObject[] { startPanel, pausePanel, gameoverPanel, gamePanel};
         oldGameState = "";
@@ -207,6 +225,7 @@ public class Stage : MonoBehaviour
             ClearChildren(column);
         }
         ClearChildren(tetracubeNode);
+        ClearChildren(nextTetracubeNode);
         CreateTetracube();
     }
     public void LoadScene()
@@ -348,6 +367,7 @@ public class Stage : MonoBehaviour
                 }
                 if (b) {
                     AddToBoard(tetracubeNode);
+                    ClearChildren(nextTetracubeNode);
                     CheckBoardColumn();
                     CreateTetracube();
                     if (downy) fallCycle = 0.2f;
@@ -599,7 +619,8 @@ public class Stage : MonoBehaviour
     {
         // int index = globalindex % 8;
         // globalindex++;
-        int index = Random.Range(0, 8);
+        int index = nextindex;
+        nextindex = Random.Range(0, 8);
         // int index = 0;
         // Debug.Log(index);
         Color32 color = Color.white;
@@ -705,6 +726,118 @@ public class Stage : MonoBehaviour
                 CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color, emission, intensity);
                 CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color, emission, intensity);
                 CreateCube(tetracubeNode, new Vector3(0f, 1f, 1f), color, emission, intensity);
+                // Debug.Log("1");
+                break;
+        }
+        
+        nextTetracubeNode.rotation = Quaternion.identity;
+        nextTetracubeNode.position = new Vector3(0f, 0.5f, 0f);
+        Vector3 deltapos;
+        // Debug.Log("switch");
+
+        switch (nextindex)
+        {
+            // Cube(1) : �ϴû�
+            case 0:
+                color = new Color32(255, 255, 255, 255);
+                emission = new Color32(0, 219, 219, 255);
+                intensity = 2.9f;
+                deltapos = new Vector3(-0.5f, -0.5f, -0.5f);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(0.0f, 1.0f, 0.0f), color, emission, intensity, layernum : 8);
+                // Debug.Log("1");
+                break;
+
+            // Cube(2) : �Ķ���
+            case 1:
+                color = new Color32(0, 33, 245, 255);
+                emission = new Color32(4, 4, 255, 255);
+                intensity = 3.0f;
+                deltapos = new Vector3(-0.5f, -0.5f, -0.5f);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(1.0f, 1.0f, 0.0f), color, emission, intensity, layernum : 8);
+                // Debug.Log("1");
+                break;
+
+            // Cube(3) : �ֻ�
+            case 2:
+                color = new Color32(255, 195, 0, 255);
+                emission = new Color32(234, 4, 0, 255);
+                intensity = 3.0f;
+                deltapos = new Vector3(-0.5f, 0.0f, -0.5f);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(1.0f, 0.0f, 1.0f), color, emission, intensity, layernum : 8);
+                // Debug.Log("1");
+                break;
+
+            // Cube(4) : �����
+            case 3:
+                color = new Color32(16, 0, 255, 255);
+                emission = new Color32(224, 214, 0, 255);
+                intensity = 3.0f;
+                deltapos = new Vector3(-0.5f, 0.0f, -1.0f);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(0.0f, 0.0f, 2.0f), color, emission, intensity, layernum : 8);
+                // Debug.Log("1");
+                break;
+
+            // Cube 5 : ������
+            case 4:
+                color = new Color32(84, 255, 0, 255);
+                emission = new Color32(9, 215, 0, 255);
+                intensity = 3.0f;
+                deltapos = new Vector3(-0.5f, 0f, 0f);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 0f, 0f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 0f, 1f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(1f, 0f, 0f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 0f, -1f), color, emission, intensity, layernum : 8);
+                // Debug.Log("1");
+                break;
+
+            // Cube 6 : �Ͼ��
+            case 5:
+                color = new Color32(0, 255, 216, 255);
+                emission = new Color32(255, 0, 178, 255);
+                intensity = 3.0f;
+                deltapos = new Vector3(0f, 0f, -0.5f);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 0f, 0f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 0f, 1f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(1f, 0f, 0f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(-1f, 0f, 1f), color, emission, intensity, layernum : 8);
+                // Debug.Log("1");
+                break;
+
+            // Cube 7 : ���ֻ�
+            case 6:
+                color = new Color32(255, 95, 196, 255);
+                emission = new Color32(2, 0, 255, 255);
+                intensity = 3.0f;
+                deltapos = new Vector3(0f, 0f, -0.5f);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 0f, 0f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 0f, 1f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 0f, -1f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 0f, 2f), color, emission, intensity, layernum : 8);
+                // Debug.Log("1");
+                break;
+
+            // Cube 8 : ������
+            case 7:
+                color = new Color32(255, 255, 255, 255);
+                emission = new Color32(228, 0, 0, 255);
+                intensity = 3.0f;
+                deltapos = new Vector3(-0.5f, -0.5f, -0.5f);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 0f, 0f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 0f, 1f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(1f, 0f, 0f), color, emission, intensity, layernum : 8);
+                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 1f, 1f), color, emission, intensity, layernum : 8);
                 // Debug.Log("1");
                 break;
         }
