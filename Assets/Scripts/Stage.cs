@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using UnityEngine.Rendering.Universal;
 
 public class Stage : MonoBehaviour
 {
@@ -40,15 +41,15 @@ public class Stage : MonoBehaviour
 
     public void ChangeAllLayer(GameObject go, int layernum)
     {
-        ChangeLayersRecursively(go.transform, layernum);
+        ChangeAllLayer(go.transform, layernum);
     }
     
-    public void ChangeLayersRecursively(Transform trans, int layernum)
+    public void ChangeAllLayer(Transform trans, int layernum)
     {
         trans.gameObject.layer = layernum;
         foreach(Transform child in trans)
         {
-            ChangeLayersRecursively(child, layernum);
+            ChangeAllLayer(child, layernum);
         }
     }
 
@@ -117,6 +118,7 @@ public class Stage : MonoBehaviour
                 {
                     gameState = "end";
                     result.text = score.getScore().ToString();
+                    EndGame();
                     //gameoverPanel.SetActive(true);
                     return;
                 }
@@ -502,15 +504,14 @@ public class Stage : MonoBehaviour
 
     void DamageBy(Transform node) {
         Material m = node.gameObject.GetComponent<Renderer>().material;
-        Debug.Log(lifeLine.Dead());
+        // Debug.Log(lifeLine.Dead());
         if (m.IsKeywordEnabled("_EMISSION")) {
             m.DisableKeyword("_EMISSION");
             lifeLine.Damage();
             // lifeLine.transform.position = new Vector3(0, Mathf.Min(20.0f, 10.0f/maxLives * (maxLives - lives)), 0);
             // lifePlane.transform.localScale = new Vector3(1, 2.0f/maxLives * (maxLives - lives), 1);
             if (lifeLine.Dead()) {
-                gameState = "end";
-                result.text = score.getScore().ToString();
+                EndGame();
             }
         }
     }
@@ -548,6 +549,12 @@ public class Stage : MonoBehaviour
         }
 
 
+    }
+
+    void EndGame()
+    {
+        gameState = "end";
+        result.text = score.getScore().ToString();
     }
 
     void CheckBoardColumn()
@@ -781,7 +788,7 @@ public class Stage : MonoBehaviour
                 color = new Color32(16, 0, 255, 255);
                 emission = new Color32(224, 214, 0, 255);
                 intensity = 3.0f;
-                deltapos = new Vector3(-0.5f, 0.0f, -1.0f);
+                deltapos = new Vector3(0.0f, 0.0f, -1.0f);
                 CreateCube(nextTetracubeNode, deltapos + new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity, layernum : 8);
                 CreateCube(nextTetracubeNode, deltapos + new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity, layernum : 8);
                 CreateCube(nextTetracubeNode, deltapos + new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity, layernum : 8);
