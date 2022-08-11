@@ -1,5 +1,6 @@
-using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Rendering.Universal;
 
@@ -15,6 +16,7 @@ public class Stage : MonoBehaviour
     public Transform backgroundNode;
     public Transform boardNode;
     public Transform tetracubeNode;
+    public Transform aniTetracubeNode;
     public Transform nextTetracubeNode;
     public GameObject gamePanel;
     public GameObject gameoverPanel;
@@ -23,8 +25,11 @@ public class Stage : MonoBehaviour
     private GameObject[] panels;
     public GameObject nextCube;
     public Text result;
+    public AnimationCurve easyOutCurve;
+    public AnimationCurve brrrCurve;
     private string oldGameState;
     private string gameState;
+    private Quaternion realRot;
 
     [Header("Game Settings")]
     [Range(4, 40)]
@@ -53,7 +58,7 @@ public class Stage : MonoBehaviour
         }
     }
 
-    public Cube CreateCube(Transform parent, Vector3 position, Color color, Color emission, float intensity, int order = 1, int layernum = 3)
+    public GameObject CreateCube(Transform parent, Vector3 position, Color color, Color emission, float intensity, int order = 1, int layernum = 3, string name = "Cube")
     {
         var go = Instantiate(cubePrefab);
         go.transform.parent = parent;
@@ -65,8 +70,9 @@ public class Stage : MonoBehaviour
         cube.sortingOrder = order;
 
         go.GetComponent<Renderer>().material.SetColor("_EmissionColor", emission * Mathf.Pow(2.0f, intensity));
+        go.name = name;
 
-        return cube;
+        return go;
     }
 
     public Projection CreateProjection(Vector3 position, Color color, int order = 1)
@@ -123,8 +129,8 @@ public class Stage : MonoBehaviour
                     return;
                 }
                 int moveDir = 0;
-                int rotDir = 0;
-                bool isRotate = false;
+                // int rotDir = 0;
+                // bool isRotate = false;
                 // Move
                 if (Input.GetKeyDown(KeyCode.LeftArrow))
                 {
@@ -145,20 +151,29 @@ public class Stage : MonoBehaviour
                 }
 
                 // Rotate
-                if (Input.GetKeyDown(KeyCode.W))
-                {
-                    rotDir = 1;
-                    isRotate = true;
+                // if (Input.GetKeyDown(KeyCode.W))
+                // {
+                //     rotDir = 1;
+                //     isRotate = true;
+                // }
+                // if (Input.GetKeyDown(KeyCode.A))
+                // {
+                //     rotDir = 2;
+                //     isRotate = true;
+                // }
+                // if (Input.GetKeyDown(KeyCode.D))
+                // {
+                //     rotDir = 3;
+                //     isRotate = true;
+                // }
+                if (Input.GetKeyDown(KeyCode.X)) {
+                    RotateTetracube(1);
                 }
-                if (Input.GetKeyDown(KeyCode.A))
-                {
-                    rotDir = 2;
-                    isRotate = true;
+                if (Input.GetKeyDown(KeyCode.Z)) {
+                    RotateTetracube(2);
                 }
-                if (Input.GetKeyDown(KeyCode.D))
-                {
-                    rotDir = 3;
-                    isRotate = true;
+                if (Input.GetKeyDown(KeyCode.C)) {
+                    RotateTetracube(3);
                 }
 
                 if (Time.time > nextFallTime)
@@ -166,7 +181,7 @@ public class Stage : MonoBehaviour
                     nextFallTime = Time.time + fallCycle;
                     maxFallTime = Time.time + 1.0f;
                     moveDir = -1;
-                    isRotate = false;
+                    // isRotate = false;
                     fall = true;
                 }
                 else
@@ -178,10 +193,10 @@ public class Stage : MonoBehaviour
                 {
                     MoveTetracube(moveDir);
                 }
-                if (isRotate)
-                {
-                    RotateTetracube(rotDir);
-                }
+                // if (isRotate)
+                // {
+                //     // RotateTetracube(rotDir);
+                // }
 
                 foreach (Transform child in projections.transform)
                 {
@@ -227,6 +242,7 @@ public class Stage : MonoBehaviour
             ClearChildren(column);
         }
         ClearChildren(tetracubeNode);
+        ClearChildren(aniTetracubeNode);
         ClearChildren(nextTetracubeNode);
         CreateTetracube();
     }
@@ -327,7 +343,6 @@ public class Stage : MonoBehaviour
     public void MoveTetracube(int i)
     {
         Vector3 oldPos = tetracubeNode.transform.position;
-        Quaternion oldRot = tetracubeNode.transform.rotation;
         Vector3 moveDir = new Vector3(0, 0, 0);
         switch (i)
         {
@@ -352,26 +367,30 @@ public class Stage : MonoBehaviour
         moveDir = Quaternion.Euler(0, rotAngle, 0) * moveDir;
 
         tetracubeNode.transform.position += moveDir;
+        aniTetracubeNode.transform.position += moveDir;
 
         if (!CanShiftTo(tetracubeNode) || CanBeDeadAt(tetracubeNode))
         {
             bool b = !CanFallTo(tetracubeNode) || !CanBeAliveAt(tetracubeNode);
             if (!CanShiftTo(tetracubeNode)) {
                 tetracubeNode.transform.position = oldPos;
-                tetracubeNode.transform.rotation = oldRot;
+                aniTetracubeNode.transform.position = oldPos;
             }
             if (moveDir.y == -1) {
                 foreach (Transform node in tetracubeNode) {
                     int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
                     if (y < 0) {
                         DamageBy(node);
+                        DamageBy(aniTetracubeNode.Find(node.name));
                     }
                 }
                 if (b) {
                     AddToBoard(tetracubeNode);
+                    ClearChildren(aniTetracubeNode);
                     ClearChildren(nextTetracubeNode);
                     CheckBoardColumn();
                     CreateTetracube();
+                    realRot = tetracubeNode.transform.rotation;
                     if (downy) fallCycle = 0.2f;
                     else fallCycle = 1.0f;
                     nextFallTime = Time.time + fallCycle;
@@ -381,53 +400,48 @@ public class Stage : MonoBehaviour
         }
     }
 
-    // private bool RotateTetracube(Quaternion rotDir) {
-    //     tetracubeNode.transform.rotation *= rotDir;
-    //     return true;
-    // }
-
-    public void RotateTetracube(int rotDir)
-    {
-        foreach (Transform node in tetracubeNode) {
-            int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
-            if (y < 0) {
-                return;
-            }
-        }
+    // public void RotateTetracube(int rotDir)
+    // {
+    //     foreach (Transform node in tetracubeNode) {
+    //         int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
+    //         if (y < 0) {
+    //             return;
+    //         }
+    //     }
         
-        Vector3 oldPos = tetracubeNode.transform.position;
-        Quaternion oldRot = tetracubeNode.transform.rotation;
-        float rotAngle = GameObject.Find("CameraBase").transform.eulerAngles.y;
-        tetracubeNode.Rotate(new Vector3(0, -rotAngle, 0), Space.World);
+    //     Vector3 oldPos = tetracubeNode.transform.position;
+    //     Quaternion oldRot = tetracubeNode.transform.rotation;
+    //     float rotAngle = GameObject.Find("CameraBase").transform.eulerAngles.y;
+    //     tetracubeNode.Rotate(new Vector3(0, -rotAngle, 0), Space.World);
 
-        switch (rotDir)
-        {
-            case 1:
-                tetracubeNode.Rotate(new Vector3(0, 90, 0), Space.World);
-                break;
-            case 2:
-                tetracubeNode.Rotate(new Vector3(90, 0, 0), Space.World);
-                break;
-            case 3:
-                tetracubeNode.Rotate(new Vector3(0, 0, 90), Space.World);
-                break;
-        }
-        tetracubeNode.Rotate(new Vector3(0, rotAngle, 0), Space.World);
+    //     switch (rotDir)
+    //     {
+    //         case 1:
+    //             tetracubeNode.Rotate(new Vector3(0, 90, 0), Space.World);
+    //             break;
+    //         case 2:
+    //             tetracubeNode.Rotate(new Vector3(90, 0, 0), Space.World);
+    //             break;
+    //         case 3:
+    //             tetracubeNode.Rotate(new Vector3(0, 0, 90), Space.World);
+    //             break;
+    //     }
+    //     tetracubeNode.Rotate(new Vector3(0, rotAngle, 0), Space.World);
 
-        if (!CanShiftTo(tetracubeNode) || CanBeDeadAt(tetracubeNode))
-        {
-            if (!CanShiftTo(tetracubeNode)) {
-                tetracubeNode.transform.position = oldPos;
-                tetracubeNode.transform.rotation = oldRot;
-            }
-            foreach (Transform node in tetracubeNode) {
-                int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
-                if (y < 0) {
-                    DamageBy(node);
-                }
-            }
-        }
-    }
+    //     if (!CanShiftTo(tetracubeNode) || CanBeDeadAt(tetracubeNode))
+    //     {
+    //         if (!CanShiftTo(tetracubeNode)) {
+    //             tetracubeNode.transform.position = oldPos;
+    //             tetracubeNode.transform.rotation = oldRot;
+    //         }
+    //         foreach (Transform node in tetracubeNode) {
+    //             int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
+    //             if (y < 0) {
+    //                 DamageBy(node);
+    //             }
+    //         }
+    //     }
+    // }
 
     bool CanShiftTo(Transform root) {
         return (CanMoveTo(root)) && CanFallTo(root) && CanBeAliveAt(root);
@@ -518,6 +532,7 @@ public class Stage : MonoBehaviour
 
     void AddToBoard(Transform root)
     {
+        ChangeAllLayer(root, 3);
         int n = 0;
         while (root.childCount > 0)
         {
@@ -537,8 +552,10 @@ public class Stage : MonoBehaviour
             {
                 node.parent = boardNode.Find("trash");
                 DamageBy(node);
+                DamageBy(aniTetracubeNode.Find(node.name));
             }
         }
+
 
         score.addScore(n * 10);
 
@@ -631,12 +648,16 @@ public class Stage : MonoBehaviour
         // int index = 0;
         // Debug.Log(index);
         Color32 color = Color.white;
-        Color32 emission;
-        float intensity;
+        Color32 emission = Color.white;
+        float intensity = 0.0f;
 
         tetracubeNode.rotation = Quaternion.identity;
         tetracubeNode.position = new Vector3(0f, boardHeight + 0.5f, 0f);
+        aniTetracubeNode.rotation = Quaternion.identity;
+        aniTetracubeNode.position = new Vector3(0f, boardHeight + 0.5f, 0f);
         // Debug.Log("switch");
+        Color32 transparent = new Color32(0, 0, 0, 255);
+        Vector3[] blockmap = new Vector3[4];
 
         switch (index)
         {
@@ -645,11 +666,7 @@ public class Stage : MonoBehaviour
                 color = new Color32(255, 255, 255, 255);
                 emission = new Color32(0, 219, 219, 255);
                 intensity = 2.9f;
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 1.0f, 0.0f), color, emission, intensity);
-                // Debug.Log("1");
+                blockmap = new Vector3[] {new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(1.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 0.0f)};
                 break;
 
             // Cube(2) : �Ķ���
@@ -657,11 +674,7 @@ public class Stage : MonoBehaviour
                 color = new Color32(0, 33, 245, 255);
                 emission = new Color32(4, 4, 255, 255);
                 intensity = 3.0f;
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(1.0f, 1.0f, 0.0f), color, emission, intensity);
-                // Debug.Log("1");
+                blockmap = new Vector3[] {new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(1.0f, 0.0f, 0.0f), new Vector3(1.0f, 1.0f, 0.0f)};
                 break;
 
             // Cube(3) : �ֻ�
@@ -669,11 +682,7 @@ public class Stage : MonoBehaviour
                 color = new Color32(255, 195, 0, 255);
                 emission = new Color32(234, 4, 0, 255);
                 intensity = 3.0f;
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 1.0f), color, emission, intensity);
-                // Debug.Log("1");
+                blockmap = new Vector3[] {new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(1.0f, 0.0f, 0.0f), new Vector3(1.0f, 0.0f, 1.0f)};
                 break;
 
             // Cube(4) : �����
@@ -681,11 +690,7 @@ public class Stage : MonoBehaviour
                 color = new Color32(16, 0, 255, 255);
                 emission = new Color32(224, 214, 0, 255);
                 intensity = 3.0f;
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0.0f, 0.0f, 2.0f), color, emission, intensity);
-                // Debug.Log("1");
+                blockmap = new Vector3[] {new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(1.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 2.0f)};
                 break;
 
             // Cube 5 : ������
@@ -693,11 +698,7 @@ public class Stage : MonoBehaviour
                 color = new Color32(84, 255, 0, 255);
                 emission = new Color32(9, 215, 0, 255);
                 intensity = 3.0f;
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, -1f), color, emission, intensity);
-                // Debug.Log("1");
+                blockmap = new Vector3[] {new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(1.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, -1.0f)};
                 break;
 
             // Cube 6 : �Ͼ��
@@ -705,11 +706,7 @@ public class Stage : MonoBehaviour
                 color = new Color32(0, 255, 216, 255);
                 emission = new Color32(255, 0, 178, 255);
                 intensity = 3.0f;
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(-1f, 0f, 1f), color, emission, intensity);
-                // Debug.Log("1");
+                blockmap = new Vector3[] {new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(1.0f, 0.0f, 0.0f), new Vector3(-1.0f, 0.0f, 1.0f)};
                 break;
 
             // Cube 7 : ���ֻ�
@@ -717,11 +714,7 @@ public class Stage : MonoBehaviour
                 color = new Color32(255, 95, 196, 255);
                 emission = new Color32(2, 0, 255, 255);
                 intensity = 3.0f;
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, -1f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 2f), color, emission, intensity);
-                // Debug.Log("1");
+                blockmap = new Vector3[] {new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(0.0f, 0.0f, -1.0f), new Vector3(0.0f, 0.0f, 2.0f)};
                 break;
 
             // Cube 8 : ������
@@ -729,17 +722,20 @@ public class Stage : MonoBehaviour
                 color = new Color32(255, 255, 255, 255);
                 emission = new Color32(228, 0, 0, 255);
                 intensity = 3.0f;
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0f, 0f, 1f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(1f, 0f, 0f), color, emission, intensity);
-                CreateCube(tetracubeNode, new Vector3(0f, 1f, 1f), color, emission, intensity);
-                // Debug.Log("1");
+                blockmap = new Vector3[] {new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(1.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 1.0f)};
                 break;
+        }
+        
+        int blockorder = 0;
+        foreach (Vector3 block in blockmap) {
+            CreateCube(tetracubeNode, block, color, emission, intensity, layernum: 9, name: blockorder.ToString());
+            CreateCube(aniTetracubeNode, block, color, emission, intensity, name: blockorder.ToString());
+            blockorder++;
         }
         
         nextTetracubeNode.rotation = Quaternion.identity;
         nextTetracubeNode.position = new Vector3(0f, 0.5f, 0f);
-        Vector3 deltapos;
+        Vector3 deltapos = new Vector3(0f, 0f, 0f);
         // Debug.Log("switch");
 
         switch (nextindex)
@@ -750,11 +746,7 @@ public class Stage : MonoBehaviour
                 emission = new Color32(0, 219, 219, 255);
                 intensity = 2.9f;
                 deltapos = new Vector3(-0.5f, -0.5f, -0.5f);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(0.0f, 1.0f, 0.0f), color, emission, intensity, layernum : 8);
-                // Debug.Log("1");
+                blockmap = new Vector3[] {new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(1.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 0.0f)};
                 break;
 
             // Cube(2) : �Ķ���
@@ -763,11 +755,7 @@ public class Stage : MonoBehaviour
                 emission = new Color32(4, 4, 255, 255);
                 intensity = 3.0f;
                 deltapos = new Vector3(-0.5f, -0.5f, -0.5f);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(1.0f, 1.0f, 0.0f), color, emission, intensity, layernum : 8);
-                // Debug.Log("1");
+                blockmap = new Vector3[] {new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(1.0f, 0.0f, 0.0f), new Vector3(1.0f, 1.0f, 0.0f)};
                 break;
 
             // Cube(3) : �ֻ�
@@ -776,11 +764,7 @@ public class Stage : MonoBehaviour
                 emission = new Color32(234, 4, 0, 255);
                 intensity = 3.0f;
                 deltapos = new Vector3(-0.5f, 0.0f, -0.5f);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(1.0f, 0.0f, 1.0f), color, emission, intensity, layernum : 8);
-                // Debug.Log("1");
+                blockmap = new Vector3[] {new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(1.0f, 0.0f, 0.0f), new Vector3(1.0f, 0.0f, 1.0f)};
                 break;
 
             // Cube(4) : �����
@@ -789,11 +773,7 @@ public class Stage : MonoBehaviour
                 emission = new Color32(224, 214, 0, 255);
                 intensity = 3.0f;
                 deltapos = new Vector3(0.0f, 0.0f, -1.0f);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(0.0f, 0.0f, 0.0f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(0.0f, 0.0f, 1.0f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(1.0f, 0.0f, 0.0f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(0.0f, 0.0f, 2.0f), color, emission, intensity, layernum : 8);
-                // Debug.Log("1");
+                blockmap = new Vector3[] {new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(1.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 2.0f)};
                 break;
 
             // Cube 5 : ������
@@ -802,11 +782,7 @@ public class Stage : MonoBehaviour
                 emission = new Color32(9, 215, 0, 255);
                 intensity = 3.0f;
                 deltapos = new Vector3(-0.5f, 0f, 0f);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 0f, 0f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 0f, 1f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(1f, 0f, 0f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 0f, -1f), color, emission, intensity, layernum : 8);
-                // Debug.Log("1");
+                blockmap = new Vector3[] {new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(1.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, -1.0f)};
                 break;
 
             // Cube 6 : �Ͼ��
@@ -815,11 +791,7 @@ public class Stage : MonoBehaviour
                 emission = new Color32(255, 0, 178, 255);
                 intensity = 3.0f;
                 deltapos = new Vector3(0f, 0f, -0.5f);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 0f, 0f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 0f, 1f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(1f, 0f, 0f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(-1f, 0f, 1f), color, emission, intensity, layernum : 8);
-                // Debug.Log("1");
+                blockmap = new Vector3[] {new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(1.0f, 0.0f, 0.0f), new Vector3(-1.0f, 0.0f, 1.0f)};
                 break;
 
             // Cube 7 : ���ֻ�
@@ -828,11 +800,7 @@ public class Stage : MonoBehaviour
                 emission = new Color32(2, 0, 255, 255);
                 intensity = 3.0f;
                 deltapos = new Vector3(0f, 0f, -0.5f);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 0f, 0f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 0f, 1f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 0f, -1f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 0f, 2f), color, emission, intensity, layernum : 8);
-                // Debug.Log("1");
+                blockmap = new Vector3[] {new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(0.0f, 0.0f, -1.0f), new Vector3(0.0f, 0.0f, 2.0f)};
                 break;
 
             // Cube 8 : ������
@@ -841,13 +809,13 @@ public class Stage : MonoBehaviour
                 emission = new Color32(228, 0, 0, 255);
                 intensity = 3.0f;
                 deltapos = new Vector3(-0.5f, -0.5f, -0.5f);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 0f, 0f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 0f, 1f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(1f, 0f, 0f), color, emission, intensity, layernum : 8);
-                CreateCube(nextTetracubeNode, deltapos + new Vector3(0f, 1f, 1f), color, emission, intensity, layernum : 8);
-                // Debug.Log("1");
+                blockmap = new Vector3[] {new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(1.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 1.0f)};
                 break;
         }
+        foreach (Vector3 block in blockmap) {
+            CreateCube(nextTetracubeNode, deltapos + block, color, emission, intensity, layernum : 8);
+        }
+        
     }
 
     private void TurnOffAllPanels()
@@ -914,4 +882,90 @@ public class Stage : MonoBehaviour
         nextFallTime = Time.time;
         fallCycle = 0.03f;
     }
+
+    private bool coroutineBlock = false;
+
+    public void RotateTetracube(int rotDir) {
+        if (coroutineBlock == false) {
+            StopCoroutine("RotateCoroutine");
+            StartCoroutine("RotateCoroutine", rotDir);
+        }
+    }
+
+    public IEnumerator RotateCoroutine(int rotDir)
+    {
+        float rotTime = 0.3f;
+        bool dead = false;
+        foreach (Transform node in tetracubeNode) {
+            int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
+            if (y < 0) {
+                dead = true;
+                break;
+            }
+        }
+        
+        Vector3 oldPos = tetracubeNode.transform.position;
+        Quaternion oldRot = tetracubeNode.transform.rotation;
+        float rotAngle = GameObject.Find("CameraBase").transform.eulerAngles.y;
+        tetracubeNode.rotation = realRot;
+        tetracubeNode.Rotate(new Vector3(0, -rotAngle, 0), Space.World);
+
+        switch (rotDir)
+        {
+            case 1:
+                tetracubeNode.Rotate(new Vector3(0, 90, 0), Space.World);
+                break;
+            case 2:
+                tetracubeNode.Rotate(new Vector3(90, 0, 0), Space.World);
+                break;
+            case 3:
+                tetracubeNode.Rotate(new Vector3(0, 0, 90), Space.World);
+                break;
+        }
+        tetracubeNode.Rotate(new Vector3(0, rotAngle, 0), Space.World);
+        Quaternion newRot = tetracubeNode.transform.rotation;
+
+        float timer = 0.0f;
+        if (!CanShiftTo(tetracubeNode) || dead) {
+            tetracubeNode.transform.position = oldPos;
+            tetracubeNode.transform.rotation = oldRot;
+            Quaternion realOldRot = oldRot;
+            Quaternion pureRot;
+            oldRot = aniTetracubeNode.transform.rotation;
+            while (timer < rotTime) {
+                timer += Time.deltaTime;
+                float percentageComplete = timer / rotTime;
+                pureRot = Quaternion.Slerp(oldRot, realOldRot, easyOutCurve.Evaluate(percentageComplete));
+                aniTetracubeNode.transform.rotation = Quaternion.Slerp(pureRot, newRot, brrrCurve.Evaluate(percentageComplete));
+                // Debug.Log(aniTetracubeNode.transform.rotation);
+                yield return null;
+            }
+            aniTetracubeNode.transform.rotation = realOldRot;
+            yield break;
+
+        }
+        if (CanBeDeadAt(tetracubeNode))
+        {
+            foreach (Transform node in tetracubeNode) {
+                int y = Mathf.RoundToInt(node.transform.position.y - 0.5f);
+                if (y < 0) {
+                    DamageBy(node);
+                    DamageBy(aniTetracubeNode.Find(node.name));
+                    coroutineBlock = true;
+                }
+            }
+        }
+
+        realRot = newRot;
+        oldRot = aniTetracubeNode.transform.rotation;
+        while (timer < rotTime) {
+            timer += Time.deltaTime;
+            float percentageComplete = timer / rotTime;
+            aniTetracubeNode.transform.rotation = Quaternion.Slerp(oldRot, newRot, easyOutCurve.Evaluate(percentageComplete));
+            // Debug.Log(aniTetracubeNode.transform.rotation);
+            yield return null;
+        }
+        aniTetracubeNode.transform.rotation = newRot;
+        coroutineBlock = false;
+   }
 }
