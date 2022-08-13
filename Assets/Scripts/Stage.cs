@@ -833,30 +833,27 @@ public class Stage : MonoBehaviour
         // Debug.Log(oldGameState + ", " + newGameState);
         oldGameState = newGameState;
         gameState = newGameState;
+        Debug.Log(newGameState);
+        TurnOffAllPanels();
         switch (newGameState)
         {
             case "start":
-                TurnOffAllPanels();
                 startPanel.SetActive(true);
                 gameObject.SetActive(false);
                 break;
             case "game":
-                TurnOffAllPanels();
                 gamePanel.SetActive(true);
                 gameObject.SetActive(true);
                 break;
             case "restart":
-                TurnOffAllPanels();
                 gamePanel.SetActive(true);
                 gameObject.SetActive(true);
                 Restart();
                 break;
             case "pause":
-                TurnOffAllPanels();
                 pausePanel.SetActive(true);
                 break;
             case "end":
-                TurnOffAllPanels();
                 gameoverPanel.SetActive(true);
                 break;
         }
