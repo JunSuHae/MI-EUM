@@ -3,30 +3,30 @@
 public class Cube : MonoBehaviour {
     public Color color {
         set {
-            renderer.material.color = value;
+            GetComponent<Renderer>().material.color = value;
         }
 
         get {
-            return renderer.material.color;
+            return GetComponent<Renderer>().material.color;
         }
     }
 
     public int sortingOrder {
         set {
-            renderer.sortingOrder = value;
+            GetComponent<Renderer>().sortingOrder = value;
         }
 
         get {
-            return renderer.sortingOrder;
+            return GetComponent<Renderer>().sortingOrder;
         }
     }
 
-    Renderer renderer;
+    Renderer r;
 
     private void Awake() {
-        renderer = GetComponent<Renderer>();
+        r = GetComponent<Renderer>();
 
-        if (renderer == null) {
+        if (GetComponent<Renderer>() == null) {
             Debug.LogError("You need to meshRenderer for Block");
         }
     }

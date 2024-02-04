@@ -5,7 +5,7 @@ using UnityEngine;
 public class Board : MonoBehaviour
 {
     private bool fall;
-    private int trashingHeight = -5;
+    private int trashingHeight = -9;
     private Stage stage;
     private GameObject trash;
     // Start is called before the first frame update
@@ -28,7 +28,7 @@ public class Board : MonoBehaviour
     {
         if (stage.getFall()) {
             HandleTrash();
-            Debug.Log("handle trash");
+            // Debug.Log("handle trash");
         }
     }
 
